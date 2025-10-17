@@ -13,7 +13,7 @@ export const walletQuerySchema = z.object({
 export const categoryCreateSchema = z.object({
   name: z.string().min(1, 'Nama kategori harus diisi'),
   type: z.enum(['expense', 'income'], {
-    errorMap: () => ({ message: 'Tipe kategori harus expense atau income' }),
+    message: 'Tipe kategori harus expense atau income',
   }),
 });
 

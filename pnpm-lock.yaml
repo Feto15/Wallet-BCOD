@@ -8,6 +8,9 @@ dependencies:
   dayjs:
     specifier: ^1.11.18
     version: 1.11.18
+  dotenv:
+    specifier: ^17.2.3
+    version: 17.2.3
   drizzle-orm:
     specifier: ^0.44.6
     version: 0.44.6(pg@8.16.3)(postgres@3.4.7)
@@ -1883,6 +1886,11 @@ packages:
     dependencies:
       esutils: 2.0.3
     dev: true
+
+  /dotenv@17.2.3:
+    resolution: {integrity: sha512-JVUnt+DUIzu87TABbhPmNfVdBDt18BLOWjMUFJMSi/Qqg7NTYtabbvSNJGOJ7afbRuv9D/lngizHtP7QyLQ+9w==}
+    engines: {node: '>=12'}
+    dev: false
 
   /drizzle-kit@0.31.5:
     resolution: {integrity: sha512-+CHgPFzuoTQTt7cOYCV6MOw2w8vqEn/ap1yv4bpZOWL03u7rlVRQhUY0WYT3rHsgVTXwYQDZaSUJSQrMBUKuWg==}

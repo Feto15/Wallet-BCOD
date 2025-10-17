@@ -84,10 +84,12 @@ export default function CategoriesPage() {
 
   if (loading) {
     return (
-      <div className="px-4 sm:px-0">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="bg-white p-6 rounded-lg shadow h-48"></div>
+      <div className="space-y-4">
+        <div className="h-6 w-40 rounded-full bg-[var(--color-divider)]" />
+        <div className="space-y-3">
+          {[1, 2].map((s) => (
+            <div key={s} className="h-20 rounded-[20px] bg-[rgba(30,30,30,0.6)] shadow-[var(--shadow-md)] animate-pulse" />
+          ))}
         </div>
       </div>
     );
@@ -97,51 +99,55 @@ export default function CategoriesPage() {
   const incomeCategories = categories.filter((c) => c.type === 'income');
 
   return (
-    <div className="px-4 sm:px-0">
-      {/* Header */}
-      <div className="mb-6 flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Categories</h1>
-          <p className="mt-2 text-sm text-gray-600">
-            Manage expense and income categories
+    <div className="space-y-6 pb-16">
+      <div className="flex items-center justify-between">
+        <div className="space-y-1">
+          <h1 className="text-[24px] font-semibold tracking-[0.2px]">Categories</h1>
+          <p className="text-[14px] text-[var(--color-text-muted)]">
+            Organise expenses and income streams
           </p>
         </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+          className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
         >
-          {showForm ? 'Cancel' : '+ Add Category'}
+          {showForm ? 'Close' : '+ Add'}
         </button>
       </div>
 
-      {/* Add Category Form */}
       {showForm && (
-        <div className="bg-white p-6 rounded-lg shadow mb-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Create New Category</h3>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-                Category Name
+        <div className="rounded-[20px] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-md)]">
+          <h3 className="text-[16px] font-semibold">Create new category</h3>
+          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
+            <div className="space-y-2">
+              <label
+                htmlFor="category-name"
+                className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]"
+              >
+                Category name
               </label>
               <input
                 type="text"
-                id="name"
+                id="category-name"
                 value={newCategory.name}
                 onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="e.g., Makan & Minum, Transport, Gaji"
+                className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                placeholder="e.g., Transport, Salary"
                 required
               />
             </div>
-            <div>
-              <label htmlFor="type" className="block text-sm font-medium text-gray-700 mb-1">
+            <div className="space-y-2">
+              <label
+                htmlFor="category-type"
+                className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]"
+              >
                 Type
               </label>
               <select
-                id="type"
+                id="category-type"
                 value={newCategory.type}
                 onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value as 'expense' | 'income' })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
               >
                 <option value="expense">Expense</option>
                 <option value="income">Income</option>
@@ -150,131 +156,91 @@ export default function CategoriesPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium disabled:opacity-50"
+              className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95 disabled:opacity-60"
             >
-              {submitting ? 'Creating...' : 'Create Category'}
+              {submitting ? 'Creating...' : 'Create category'}
             </button>
           </form>
         </div>
       )}
 
-      {/* Expense Categories */}
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Expense Categories</h2>
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {expenseCategories.map((category) => (
-                <tr key={category.id} className={category.isArchived ? 'bg-gray-50' : ''}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {category.isArchived ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                        Archived
-                      </span>
-                    ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {!category.isArchived && (
-                      <button
-                        onClick={() => handleArchive(category.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Archive
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {expenseCategories.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                    No expense categories yet.
-                  </td>
-                </tr>
+      <section className="space-y-3">
+        <h2 className="text-[16px] font-semibold">Expense categories</h2>
+        <div className="space-y-3">
+          {expenseCategories.map((category) => (
+            <div
+              key={category.id}
+              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-[16px] font-semibold">{category.name}</p>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium ${
+                    category.isArchived
+                      ? 'bg-[rgba(115,115,115,0.2)] text-[var(--color-text-muted)]'
+                      : 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
+                  }`}
+                >
+                  {category.isArchived ? 'Archived' : 'Expense'}
+                </span>
+              </div>
+              {!category.isArchived && (
+                <button
+                  onClick={() => handleArchive(category.id)}
+                  className="mt-3 text-[12px] text-[var(--color-negative)] underline"
+                >
+                  Archive category
+                </button>
               )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+            </div>
+          ))}
 
-      {/* Income Categories */}
-      <div>
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Income Categories</h2>
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Name
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Status
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {incomeCategories.map((category) => (
-                <tr key={category.id} className={category.isArchived ? 'bg-gray-50' : ''}>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-gray-900">{category.name}</div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    {category.isArchived ? (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                        Archived
-                      </span>
-                    ) : (
-                      <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                        Active
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    {!category.isArchived && (
-                      <button
-                        onClick={() => handleArchive(category.id)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        Archive
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {incomeCategories.length === 0 && (
-                <tr>
-                  <td colSpan={3} className="px-6 py-4 text-center text-gray-500">
-                    No income categories yet.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          {expenseCategories.length === 0 && (
+            <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">
+              <p>No expense categories yet.</p>
+            </div>
+          )}
         </div>
-      </div>
+      </section>
+
+      <section className="space-y-3">
+        <h2 className="text-[16px] font-semibold">Income categories</h2>
+        <div className="space-y-3">
+          {incomeCategories.map((category) => (
+            <div
+              key={category.id}
+              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
+            >
+              <div className="flex items-center justify-between">
+                <p className="text-[16px] font-semibold">{category.name}</p>
+                <span
+                  className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium ${
+                    category.isArchived
+                      ? 'bg-[rgba(115,115,115,0.2)] text-[var(--color-text-muted)]'
+                      : 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
+                  }`}
+                >
+                  {category.isArchived ? 'Archived' : 'Income'}
+                </span>
+              </div>
+              {!category.isArchived && (
+                <button
+                  onClick={() => handleArchive(category.id)}
+                  className="mt-3 text-[12px] text-[var(--color-negative)] underline"
+                >
+                  Archive category
+                </button>
+              )}
+            </div>
+          ))}
+
+          {incomeCategories.length === 0 && (
+            <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">
+              <p>No income categories yet.</p>
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

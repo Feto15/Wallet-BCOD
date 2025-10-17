@@ -1,16 +1,14 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Roboto } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
+import BottomNav from "@/components/BottomNav";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const roboto = Roboto({
+  variable: "--font-roboto",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "700"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -26,54 +24,38 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${roboto.variable} font-sans bg-[var(--color-bg)] text-[var(--color-text)] antialiased`}
       >
-        <div className="min-h-screen bg-gray-50">
-          {/* Navigation Bar */}
-          <nav className="bg-white shadow-sm border-b border-gray-200">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="flex justify-between h-16">
-                <div className="flex">
-                  <div className="flex-shrink-0 flex items-center">
-                    <Link href="/" className="text-xl font-bold text-blue-600">
-                      💰 Wallet
-                    </Link>
-                  </div>
-                  <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-                    <Link
-                      href="/"
-                      className="border-transparent text-gray-900 hover:border-blue-500 hover:text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      Dashboard
-                    </Link>
-                    <Link
-                      href="/transactions"
-                      className="border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      Transactions
-                    </Link>
-                    <Link
-                      href="/wallets"
-                      className="border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      Wallets
-                    </Link>
-                    <Link
-                      href="/categories"
-                      className="border-transparent text-gray-500 hover:border-blue-500 hover:text-blue-600 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-                    >
-                      Categories
-                    </Link>
-                  </div>
-                </div>
+        <div className="flex min-h-screen flex-col items-center">
+          <div className="safe-area-padded flex w-full flex-1 flex-col">
+            <header className="mx-auto flex w-full max-w-[390px] items-center justify-between px-4 py-4">
+              <Link href="/" className="text-[24px] font-semibold tracking-[0.2px]">
+                Belanja COD Wallet
+              </Link>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2E2E2E] text-[18px] text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                  aria-label="Add transaction"
+                >
+                  +
+                </button>
+                <button
+                  type="button"
+                  className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[#2E2E2E] text-[18px] text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                  aria-label="Open settings"
+                >
+                  ⚙
+                </button>
               </div>
-            </div>
-          </nav>
+            </header>
 
-          {/* Main Content */}
-          <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            {children}
-          </main>
+            <main className="mx-auto w-full max-w-[390px] flex-1 px-4 pb-24">
+              {children}
+            </main>
+          </div>
+
+          <BottomNav />
         </div>
       </body>
     </html>

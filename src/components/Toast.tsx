@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 interface ToastProps {
   message: string;
@@ -17,24 +17,18 @@ export function Toast({ message, type, onClose }: ToastProps) {
     return () => clearTimeout(timer);
   }, [onClose]);
 
-  const bgColor = {
-    success: 'bg-green-500',
-    error: 'bg-red-500',
-    info: 'bg-blue-500',
-  }[type];
-
   return (
-    <div className="fixed bottom-4 right-4 z-50 animate-slide-up">
-      <div className={`${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-3 min-w-[300px]`}>
-        <span className="text-lg">
-          {type === 'success' && '✓'}
-          {type === 'error' && '✕'}
-          {type === 'info' && 'ℹ'}
+    <div className="fixed bottom-6 right-6 z-50 animate-slide-up">
+      <div className="flex min-w-[280px] items-center gap-3 rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-surface)] px-5 py-4 text-[14px] text-[var(--color-text)] shadow-[var(--shadow-lg)]">
+        <span className="text-[18px]">
+          {type === 'success' && '✅'}
+          {type === 'error' && '⚠️'}
+          {type === 'info' && '💡'}
         </span>
-        <span className="flex-1">{message}</span>
+        <span className="flex-1 leading-snug text-[var(--color-text-muted)]">{message}</span>
         <button
           onClick={onClose}
-          className="text-white hover:text-gray-200 font-bold"
+          className="text-[var(--color-text)] hover:text-[var(--color-accent)]"
         >
           ×
         </button>

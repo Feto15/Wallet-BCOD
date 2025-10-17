@@ -177,240 +177,220 @@ export default function AddTransactionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Overlay */}
       <div
-        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        className="fixed inset-0 bg-[rgba(13,13,13,0.85)]"
         onClick={handleClose}
-      ></div>
+      />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto z-10">
-          <form onSubmit={handleSubmit}>
-            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900">
-                  Add New Transaction
-                </h3>
-              </div>
+      <div className="relative z-10 w-full max-w-[420px] max-h-[92vh] overflow-y-auto rounded-[24px] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-lg)]">
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <header className="flex items-start justify-between">
+            <div>
+              <h3 className="text-[20px] font-semibold">Add transaction</h3>
+              <p className="text-[12px] text-[var(--color-text-muted)]">Capture income, expense, or transfer</p>
+            </div>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2D2D2D] text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </header>
 
-              {/* Validation Error */}
-              {validationError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
-                  <p className="text-sm text-red-600">{validationError}</p>
-                </div>
-              )}
+          {validationError && (
+            <div className="rounded-[16px] border border-[var(--color-negative)] bg-[rgba(239,68,68,0.15)] px-4 py-3 text-[12px] text-[var(--color-negative)]">
+              {validationError}
+            </div>
+          )}
 
-              {/* Transaction Type */}
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Transaction Type
+          <div className="space-y-2">
+            <span className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+              Transaction type
+            </span>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  { value: 'expense', label: 'Expense', color: 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]' },
+                  { value: 'income', label: 'Income', color: 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]' },
+                  { value: 'transfer', label: 'Transfer', color: 'bg-[rgba(167,139,250,0.15)] text-[var(--color-accent)]' },
+                ] as const
+              ).map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setTransactionType(option.value)}
+                  className={`rounded-full px-4 py-2 text-[14px] font-medium transition-all duration-200 ease-in-out ${
+                    transactionType === option.value
+                      ? option.color
+                      : 'bg-[#2D2D2D] text-[var(--color-text-muted)] hover:brightness-110'
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {transactionType === 'transfer' ? (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="fromWallet" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+                  From wallet
                 </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setTransactionType('expense')}
-                    className={`px-4 py-2 rounded-md font-medium ${
-                      transactionType === 'expense'
-                        ? 'bg-red-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    Expense
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTransactionType('income')}
-                    className={`px-4 py-2 rounded-md font-medium ${
-                      transactionType === 'income'
-                        ? 'bg-green-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    Income
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setTransactionType('transfer')}
-                    className={`px-4 py-2 rounded-md font-medium ${
-                      transactionType === 'transfer'
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    Transfer
-                  </button>
-                </div>
-              </div>
-
-              {/* Conditional Fields */}
-              {transactionType === 'transfer' ? (
-                <>
-                  {/* From Wallet */}
-                  <div className="mb-4">
-                    <label htmlFor="fromWallet" className="block text-sm font-medium text-gray-700 mb-1">
-                      From Wallet
-                    </label>
-                    <select
-                      id="fromWallet"
-                      value={fromWalletId}
-                      onChange={(e) => setFromWalletId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                      disabled={loadingWallets}
-                    >
-                      <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
-                      {wallets.map((wallet) => (
-                        <option key={wallet.id} value={wallet.id}>
-                          {wallet.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* To Wallet */}
-                  <div className="mb-4">
-                    <label htmlFor="toWallet" className="block text-sm font-medium text-gray-700 mb-1">
-                      To Wallet
-                    </label>
-                    <select
-                      id="toWallet"
-                      value={toWalletId}
-                      onChange={(e) => setToWalletId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                      disabled={loadingWallets}
-                    >
-                      <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
-                      {wallets
-                        .filter((w) => w.id.toString() !== fromWalletId)
-                        .map((wallet) => (
-                          <option key={wallet.id} value={wallet.id}>
-                            {wallet.name}
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* Wallet */}
-                  <div className="mb-4">
-                    <label htmlFor="wallet" className="block text-sm font-medium text-gray-700 mb-1">
-                      Wallet
-                    </label>
-                    <select
-                      id="wallet"
-                      value={walletId}
-                      onChange={(e) => setWalletId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                      disabled={loadingWallets}
-                    >
-                      <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
-                      {wallets.map((wallet) => (
-                        <option key={wallet.id} value={wallet.id}>
-                          {wallet.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Category */}
-                  <div className="mb-4">
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                      Category
-                    </label>
-                    <select
-                      id="category"
-                      value={categoryId}
-                      onChange={(e) => setCategoryId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      required
-                      disabled={loadingCategories}
-                    >
-                      <option value="">{loadingCategories ? 'Loading...' : 'Select category'}</option>
-                      {filteredCategories.map((category) => (
-                        <option key={category.id} value={category.id}>
-                          {category.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </>
-              )}
-
-              {/* Amount */}
-              <div className="mb-4">
-                <label htmlFor="amount" className="block text-sm font-medium text-gray-700 mb-1">
-                  Amount (Rp)
-                </label>
-                <input
-                  type="text"
-                  id="amount"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="50000"
+                <select
+                  id="fromWallet"
+                  value={fromWalletId}
+                  onChange={(e) => setFromWalletId(e.target.value)}
+                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                   required
-                />
-                {amount && (
-                  <p className="mt-1 text-sm text-gray-500">
-                    = {formatIDR(parseMoneyInput(amount))}
-                  </p>
-                )}
+                  disabled={loadingWallets}
+                >
+                  <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
+                  {wallets.map((wallet) => (
+                    <option key={wallet.id} value={wallet.id}>
+                      {wallet.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Date & Time */}
-              <div className="mb-4">
-                <label htmlFor="occurredAt" className="block text-sm font-medium text-gray-700 mb-1">
-                  Date & Time
+              <div className="space-y-2">
+                <label htmlFor="toWallet" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+                  To wallet
                 </label>
-                <input
-                  type="datetime-local"
-                  id="occurredAt"
-                  value={occurredAt}
-                  onChange={(e) => setOccurredAt(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                <select
+                  id="toWallet"
+                  value={toWalletId}
+                  onChange={(e) => setToWalletId(e.target.value)}
+                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
                   required
-                />
-              </div>
-
-              {/* Note */}
-              <div className="mb-4">
-                <label htmlFor="note" className="block text-sm font-medium text-gray-700 mb-1">
-                  Note (Optional)
-                </label>
-                <textarea
-                  id="note"
-                  value={note}
-                  onChange={(e) => setNote(e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Add a note..."
-                  rows={3}
-                  maxLength={500}
-                />
+                  disabled={loadingWallets}
+                >
+                  <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
+                  {wallets
+                    .filter((w) => w.id.toString() !== fromWalletId)
+                    .map((wallet) => (
+                      <option key={wallet.id} value={wallet.id}>
+                        {wallet.name}
+                      </option>
+                    ))}
+                </select>
               </div>
             </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="wallet" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+                  Wallet
+                </label>
+                <select
+                  id="wallet"
+                  value={walletId}
+                  onChange={(e) => setWalletId(e.target.value)}
+                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                  required
+                  disabled={loadingWallets}
+                >
+                  <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
+                  {wallets.map((wallet) => (
+                    <option key={wallet.id} value={wallet.id}>
+                      {wallet.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
-            {/* Footer */}
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50"
-              >
-                {submitting ? 'Creating...' : 'Create Transaction'}
-              </button>
-              <button
-                type="button"
-                onClick={handleClose}
-                className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-              >
-                Cancel
-              </button>
+              <div className="space-y-2">
+                <label htmlFor="category" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+                  Category
+                </label>
+                <select
+                  id="category"
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+                  required
+                  disabled={loadingCategories}
+                >
+                  <option value="">{loadingCategories ? 'Loading...' : 'Select category'}</option>
+                  {filteredCategories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          </form>
-        </div>
+          )}
+
+          <div className="space-y-2">
+            <label htmlFor="amount" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+              Amount (Rp)
+            </label>
+            <input
+              type="text"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              placeholder="50000"
+              required
+            />
+            {amount && (
+              <p className="text-[12px] text-[var(--color-text-muted)]">
+                = {formatIDR(parseMoneyInput(amount))}
+              </p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <label htmlFor="occurredAt" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+              Date &amp; time
+            </label>
+            <input
+              type="datetime-local"
+              id="occurredAt"
+              value={occurredAt}
+              onChange={(e) => setOccurredAt(e.target.value)}
+              className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label htmlFor="note" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+              Note (optional)
+            </label>
+            <textarea
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+              placeholder="Add context for this transaction"
+              rows={3}
+              maxLength={500}
+            />
+          </div>
+
+          <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex-1 rounded-full bg-[var(--color-accent)] px-4 py-3 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95 disabled:opacity-60"
+            >
+              {submitting ? 'Creating...' : 'Create transaction'}
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="flex-1 rounded-full border border-[var(--color-divider)] bg-[#2D2D2D] px-4 py-3 text-[14px] font-semibold text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

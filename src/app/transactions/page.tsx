@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import dayjs from 'dayjs';
 import { formatIDR } from '@/lib/utils';
-import { useToast } from '@/hooks/useToast';
 import { ToastContainer } from '@/components/Toast';
 import AddTransactionModal from '@/components/AddTransactionModal';
-import dayjs from 'dayjs';
+import { useToast } from '@/hooks/useToast';
 
 interface Transaction {
   id: number;
@@ -54,14 +54,15 @@ export default function TransactionsPage() {
 
   if (loading) {
     return (
-      <div className="px-4 sm:px-0">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Loading Transactions...</h1>
-          <p className="mt-2 text-sm text-gray-600">Please wait</p>
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <div className="h-6 w-40 rounded-full bg-[var(--color-divider)]" />
+          <div className="h-4 w-52 rounded-full bg-[var(--color-divider)]" />
         </div>
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
-          <div className="bg-white p-6 rounded-lg shadow h-96"></div>
+        <div className="space-y-3">
+          {[1, 2, 3].map((skeleton) => (
+            <div key={skeleton} className="h-24 rounded-[20px] bg-[rgba(30,30,30,0.6)] shadow-[var(--shadow-md)] animate-pulse" />
+          ))}
         </div>
       </div>
     );
@@ -79,118 +80,82 @@ export default function TransactionsPage() {
         }}
         onError={(message) => toast.error(message)}
       />
-      <div className="px-4 sm:px-0">
-        {/* Header */}
-        <div className="mb-6 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Transactions</h1>
-            <p className="mt-2 text-sm text-gray-600">
-              View all your transactions
+      <div className="space-y-6 pb-16">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-[24px] font-semibold tracking-[0.2px]">Transactions</h1>
+            <p className="text-[14px] text-[var(--color-text-muted)]">
+              Track every income, expense, and transfer
             </p>
           </div>
           <button
             onClick={() => setShowModal(true)}
-            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+            className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
           >
-            + Add Transaction
+            + Add
           </button>
         </div>
 
-        {/* Transactions List */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Wallet
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Amount
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Note
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {transactions.map((tx) => (
-                  <tr key={tx.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {dayjs(tx.occurredAt).format('DD MMM YYYY')}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {dayjs(tx.occurredAt).format('HH:mm')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span
-                        className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                          tx.type === 'expense'
-                            ? 'bg-red-100 text-red-800'
-                            : tx.type === 'income'
-                            ? 'bg-green-100 text-green-800'
-                            : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {tx.type}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{tx.walletName}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">
-                        {tx.categoryName || '-'}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right">
-                      <div
-                        className={`text-sm font-semibold ${
-                          tx.type === 'expense'
-                            ? 'text-red-600'
-                            : tx.type === 'income'
-                            ? 'text-green-600'
-                            : 'text-blue-600'
-                        }`}
-                      >
-                        {tx.type === 'expense' ? '-' : '+'}{formatIDR(tx.amount)}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="text-sm text-gray-500 truncate max-w-xs">
-                        {tx.note || '-'}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-                {transactions.length === 0 && (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
-                      No transactions yet. Click &quot;+ Add Transaction&quot; to create one.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+        <div className="space-y-3">
+          {transactions.map((tx) => (
+            <div
+              key={tx.id}
+              className="rounded-[20px] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-md)]"
+            >
+              <div className="flex items-start justify-between">
+                <div className="space-y-1">
+                  <p className="text-[12px] text-[var(--color-text-muted)]">
+                    {dayjs(tx.occurredAt).format('DD MMM YYYY, HH:mm')}
+                  </p>
+                  <p className="text-[16px] font-semibold">{tx.walletName}</p>
+                  <p className="text-[12px] text-[var(--color-text-muted)]">
+                    {tx.categoryName ?? 'No category'}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span
+                    className={`inline-flex items-center justify-center rounded-[16px] px-3 py-1 text-[12px] font-medium ${
+                      tx.type === 'expense'
+                        ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
+                        : tx.type === 'income'
+                        ? 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
+                        : 'bg-[rgba(167,139,250,0.15)] text-[var(--color-accent)]'
+                    }`}
+                  >
+                    {tx.type}
+                  </span>
+                  <p
+                    className={`mt-3 text-[16px] font-semibold ${
+                      tx.type === 'expense'
+                        ? 'text-[var(--color-negative)]'
+                        : tx.type === 'income'
+                        ? 'text-[var(--color-positive)]'
+                        : 'text-[var(--color-accent)]'
+                    }`}
+                  >
+                    {tx.type === 'expense' ? '-' : '+'}{formatIDR(tx.amount)}
+                  </p>
+                </div>
+              </div>
+              {tx.note && (
+                <p className="mt-3 rounded-[16px] bg-[#2D2D2D] px-3 py-2 text-[12px] text-[var(--color-text-muted)]">
+                  {tx.note}
+                </p>
+              )}
+            </div>
+          ))}
+
+          {transactions.length === 0 && (
+            <div className="rounded-[20px] bg-[var(--color-surface)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">
+              <p>No transactions yet. Tap &quot;+ Add&quot; to create your first entry.</p>
+            </div>
+          )}
         </div>
 
-        {/* Summary */}
         {transactions.length > 0 && (
-          <div className="mt-4 text-sm text-gray-600 text-right">
+          <p className="text-right text-[12px] text-[var(--color-text-muted)]">
             Showing {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
-          </div>
+          </p>
         )}
       </div>
     </>

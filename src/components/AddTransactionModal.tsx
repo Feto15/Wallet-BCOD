@@ -31,6 +31,9 @@ export default function AddTransactionModal({
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingWallets, setLoadingWallets] = useState(false);
+  const [loadingCategories, setLoadingCategories] = useState(false);
+  const [validationError, setValidationError] = useState('');
 
   // Form state
   const [walletId, setWalletId] = useState('');
@@ -47,34 +50,42 @@ export default function AddTransactionModal({
     if (isOpen) {
       fetchWallets();
       fetchCategories();
-      // Set default date/time to now
+      // Set default date/time to now in datetime-local format
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
       const hours = String(now.getHours()).padStart(2, '0');
       const minutes = String(now.getMinutes()).padStart(2, '0');
-      setOccurredAt(`${year}-${month}-${day} ${hours}:${minutes}`);
+      setOccurredAt(`${year}-${month}-${day}T${hours}:${minutes}`);
     }
   }, [isOpen]);
 
   const fetchWallets = async () => {
     try {
+      setLoadingWallets(true);
       const res = await fetch('/api/wallets'); // Only active wallets
       const data = await res.json();
       setWallets(data);
     } catch (error) {
       console.error('Failed to fetch wallets:', error);
+      onError('Gagal memuat daftar wallet');
+    } finally {
+      setLoadingWallets(false);
     }
   };
 
   const fetchCategories = async () => {
     try {
+      setLoadingCategories(true);
       const res = await fetch('/api/categories'); // Only active categories
       const data = await res.json();
       setCategories(data);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
+      onError('Gagal memuat daftar kategori');
+    } finally {
+      setLoadingCategories(false);
     }
   };
 
@@ -82,29 +93,46 @@ export default function AddTransactionModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setValidationError('');
     
+    // Validate amount
+    const parsedAmount = parseMoneyInput(amount);
+    if (parsedAmount <= 0) {
+      setValidationError('Jumlah harus lebih dari 0');
+      return;
+    }
+
+    // Validate transfer wallets are different
+    if (transactionType === 'transfer' && fromWalletId === toWalletId) {
+      setValidationError('Wallet asal dan tujuan tidak boleh sama');
+      return;
+    }
+
     try {
       setSubmitting(true);
 
       let body: any;
+
+      // Convert datetime-local format to API format (YYYY-MM-DD HH:mm)
+      const formattedDateTime = occurredAt.replace('T', ' ');
 
       if (transactionType === 'transfer') {
         body = {
           type: 'transfer',
           from_wallet_id: parseInt(fromWalletId),
           to_wallet_id: parseInt(toWalletId),
-          amount: parseMoneyInput(amount),
+          amount: parsedAmount,
           note: note || undefined,
-          occurred_at: occurredAt,
+          occurred_at: formattedDateTime,
         };
       } else {
         body = {
           type: transactionType,
           wallet_id: parseInt(walletId),
           category_id: parseInt(categoryId),
-          amount: parseMoneyInput(amount),
+          amount: parsedAmount,
           note: note || undefined,
-          occurred_at: occurredAt,
+          occurred_at: formattedDateTime,
         };
       }
 
@@ -137,6 +165,7 @@ export default function AddTransactionModal({
     setNote('');
     setFromWalletId('');
     setToWalletId('');
+    setValidationError('');
   };
 
   const handleClose = () => {
@@ -147,16 +176,15 @@ export default function AddTransactionModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        {/* Overlay */}
-        <div
-          className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
-          onClick={handleClose}
-        ></div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* Overlay */}
+      <div
+        className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+        onClick={handleClose}
+      ></div>
 
-        {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+      {/* Modal */}
+      <div className="relative bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto z-10">
           <form onSubmit={handleSubmit}>
             <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
               <div className="mb-4">
@@ -164,6 +192,13 @@ export default function AddTransactionModal({
                   Add New Transaction
                 </h3>
               </div>
+
+              {/* Validation Error */}
+              {validationError && (
+                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-600">{validationError}</p>
+                </div>
+              )}
 
               {/* Transaction Type */}
               <div className="mb-4">
@@ -221,8 +256,9 @@ export default function AddTransactionModal({
                       onChange={(e) => setFromWalletId(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loadingWallets}
                     >
-                      <option value="">Select wallet</option>
+                      <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
                       {wallets.map((wallet) => (
                         <option key={wallet.id} value={wallet.id}>
                           {wallet.name}
@@ -242,8 +278,9 @@ export default function AddTransactionModal({
                       onChange={(e) => setToWalletId(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loadingWallets}
                     >
-                      <option value="">Select wallet</option>
+                      <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
                       {wallets
                         .filter((w) => w.id.toString() !== fromWalletId)
                         .map((wallet) => (
@@ -267,8 +304,9 @@ export default function AddTransactionModal({
                       onChange={(e) => setWalletId(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loadingWallets}
                     >
-                      <option value="">Select wallet</option>
+                      <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
                       {wallets.map((wallet) => (
                         <option key={wallet.id} value={wallet.id}>
                           {wallet.name}
@@ -288,8 +326,9 @@ export default function AddTransactionModal({
                       onChange={(e) => setCategoryId(e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                       required
+                      disabled={loadingCategories}
                     >
-                      <option value="">Select category</option>
+                      <option value="">{loadingCategories ? 'Loading...' : 'Select category'}</option>
                       {filteredCategories.map((category) => (
                         <option key={category.id} value={category.id}>
                           {category.name}
@@ -327,17 +366,13 @@ export default function AddTransactionModal({
                   Date & Time
                 </label>
                 <input
-                  type="text"
+                  type="datetime-local"
                   id="occurredAt"
                   value={occurredAt}
                   onChange={(e) => setOccurredAt(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="YYYY-MM-DD HH:mm"
                   required
                 />
-                <p className="mt-1 text-xs text-gray-500">
-                  Format: YYYY-MM-DD HH:mm (e.g., 2024-10-17 14:30)
-                </p>
               </div>
 
               {/* Note */}
@@ -376,7 +411,6 @@ export default function AddTransactionModal({
             </div>
           </form>
         </div>
-      </div>
     </div>
   );
 }

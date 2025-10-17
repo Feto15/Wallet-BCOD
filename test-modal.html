@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Modal Button</title>
+    <script>
+        // Test script to verify button click
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('✓ DOM Loaded');
+            
+            // Wait a bit for React to render
+            setTimeout(() => {
+                const button = document.querySelector('button[onclick*="setShowModal"], button:has-text("Add Transaction")');
+                console.log('Button found:', button);
+                
+                if (button) {
+                    console.log('✓ Button exists');
+                    console.log('Button text:', button.textContent);
+                    console.log('Button onclick:', button.onclick);
+                    
+                    // Try to click it
+                    button.click();
+                    console.log('✓ Button clicked');
+                } else {
+                    console.error('✗ Button not found!');
+                }
+            }, 2000);
+        });
+    </script>
+</head>
+<body>
+    <h1>Open browser console and navigate to http://localhost:3000/transactions</h1>
+    <p>This will test if the button is clickable</p>
+</body>
+</html>

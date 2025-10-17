@@ -30,13 +30,18 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async () => {
     try {
+      console.log('Fetching transactions...');
       setLoading(true);
       const res = await fetch('/api/transactions');
+      console.log('Response status:', res.status);
       const data = await res.json();
+      console.log('Transactions data:', data);
       setTransactions(data);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
+      toast.error('Failed to load transactions');
     } finally {
+      console.log('Setting loading to false');
       setLoading(false);
     }
   };
@@ -45,9 +50,15 @@ export default function TransactionsPage() {
     fetchTransactions();
   }, []);
 
+  console.log('Render - loading:', loading, 'transactions:', transactions.length);
+
   if (loading) {
     return (
       <div className="px-4 sm:px-0">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Loading Transactions...</h1>
+          <p className="mt-2 text-sm text-gray-600">Please wait</p>
+        </div>
         <div className="animate-pulse">
           <div className="h-8 bg-gray-200 rounded w-1/4 mb-6"></div>
           <div className="bg-white p-6 rounded-lg shadow h-96"></div>

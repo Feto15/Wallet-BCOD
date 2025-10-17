@@ -172,52 +172,53 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Create transfer group and two transaction records
-      const [transferGroup] = await db
-        .insert(transferGroups)
-        .values({
-          note: validated.note,
-        })
-        .returning();
+      // Create transfer group and two transaction records atomically
+      const result = await db.transaction(async (tx) => {
+        const [transferGroup] = await tx
+          .insert(transferGroups)
+          .values({
+            note: validated.note,
+          })
+          .returning();
 
-      const occurredAt = new Date(validated.occurred_at.replace(' ', 'T'));
+        const occurredAt = new Date(validated.occurred_at.replace(' ', 'T'));
 
-      // Insert outgoing transaction (negative)
-      const [outgoingTx] = await db
-        .insert(transactions)
-        .values({
-          walletId: validated.from_wallet_id,
-          categoryId: null,
-          type: 'transfer',
-          amount: validated.amount,
-          occurredAt,
-          note: validated.note,
-          transferGroupId: transferGroup.id,
-        })
-        .returning();
+        // Insert outgoing transaction (negative)
+        const [outgoingTx] = await tx
+          .insert(transactions)
+          .values({
+            walletId: validated.from_wallet_id,
+            categoryId: null,
+            type: 'transfer',
+            amount: validated.amount,
+            occurredAt,
+            note: validated.note,
+            transferGroupId: transferGroup.id,
+          })
+          .returning();
 
-      // Insert incoming transaction (positive)
-      const [incomingTx] = await db
-        .insert(transactions)
-        .values({
-          walletId: validated.to_wallet_id,
-          categoryId: null,
-          type: 'transfer',
-          amount: validated.amount,
-          occurredAt,
-          note: validated.note,
-          transferGroupId: transferGroup.id,
-        })
-        .returning();
+        // Insert incoming transaction (positive)
+        const [incomingTx] = await tx
+          .insert(transactions)
+          .values({
+            walletId: validated.to_wallet_id,
+            categoryId: null,
+            type: 'transfer',
+            amount: validated.amount,
+            occurredAt,
+            note: validated.note,
+            transferGroupId: transferGroup.id,
+          })
+          .returning();
 
-      return NextResponse.json(
-        {
+        return {
           transferGroupId: transferGroup.id,
           outgoing: outgoingTx,
           incoming: incomingTx,
-        },
-        { status: 201 }
-      );
+        };
+      });
+
+      return NextResponse.json(result, { status: 201 });
     }
 
     return NextResponse.json(

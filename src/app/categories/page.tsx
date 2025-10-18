@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { deleteCategoryAction } from '@/actions/categories';
+import AddCategoryModal from '@/components/AddCategoryModal';
 
 // v1.2: removed isArchived field
 interface Category {
@@ -16,9 +17,7 @@ export default function CategoriesPage() {
   const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' as 'expense' | 'income' });
-  const [submitting, setSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const fetchCategories = async () => {
@@ -106,70 +105,28 @@ export default function CategoriesPage() {
   const incomeCategories = categories.filter((c) => c.type === 'income');
 
   return (
-    <div className="space-y-6 pb-16">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h1 className="text-[24px] font-semibold tracking-[0.2px]">Categories</h1>
-          <p className="text-[14px] text-[var(--color-text-muted)]">
-            Organise expenses and income streams
-          </p>
+    <>
+      <AddCategoryModal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        onSuccess={handleModalSuccess}
+      />
+      
+      <div className="space-y-6 pb-16">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-[24px] font-semibold tracking-[0.2px]">Categories</h1>
+            <p className="text-[14px] text-[var(--color-text-muted)]">
+              Organise expenses and income streams
+            </p>
+          </div>
+          <button
+            onClick={() => setShowModal(true)}
+            className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+          >
+            + Add
+          </button>
         </div>
-        <button
-          onClick={() => setShowForm(!showForm)}
-          className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
-        >
-          {showForm ? 'Close' : '+ Add'}
-        </button>
-      </div>
-
-      {showForm && (
-        <div className="rounded-[20px] bg-[var(--color-surface)] p-5 shadow-[var(--shadow-md)]">
-          <h3 className="text-[16px] font-semibold">Create new category</h3>
-          <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-            <div className="space-y-2">
-              <label
-                htmlFor="category-name"
-                className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]"
-              >
-                Category name
-              </label>
-              <input
-                type="text"
-                id="category-name"
-                value={newCategory.name}
-                onChange={(e) => setNewCategory({ ...newCategory, name: e.target.value })}
-                className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                placeholder="e.g., Transport, Salary"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label
-                htmlFor="category-type"
-                className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]"
-              >
-                Type
-              </label>
-              <select
-                id="category-type"
-                value={newCategory.type}
-                onChange={(e) => setNewCategory({ ...newCategory, type: e.target.value as 'expense' | 'income' })}
-                className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-              >
-                <option value="expense">Expense</option>
-                <option value="income">Income</option>
-              </select>
-            </div>
-            <button
-              type="submit"
-              disabled={submitting}
-              className="inline-flex items-center justify-center rounded-full bg-[var(--color-accent)] px-4 py-2 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95 disabled:opacity-60"
-            >
-              {submitting ? 'Creating...' : 'Create category'}
-            </button>
-          </form>
-        </div>
-      )}
 
       <section className="space-y-3">
         <h2 className="text-[16px] font-semibold">Expense categories</h2>
@@ -266,6 +223,7 @@ export default function CategoriesPage() {
           )}
         </div>
       </section>
-    </div>
+      </div>
+    </>
   );
 }

@@ -138,29 +138,29 @@ export default function WalletsPage() {
           return (
             <div
               key={wallet.id}
-              className="rounded-[20px] bg-[var(--color-card)] p-5 shadow-[var(--shadow-md)]"
+              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
             >
               {/* Header: Icon, Name & Menu */}
-              <div className="flex items-start justify-between mb-4">
-                <div className="flex items-center gap-3">
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-2.5">
                   {/* Wallet Icon */}
-                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600">
-                    <svg className="h-7 w-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-600">
+                    <svg className="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
                     </svg>
                   </div>
                   
                   {/* Wallet Name & Type */}
                   <div>
-                    <h3 className="text-[18px] font-semibold">{wallet.name}</h3>
-                    <p className="text-[13px] text-[var(--color-text-muted)]">Rekening Bank</p>
+                    <h3 className="text-[16px] font-semibold">{wallet.name}</h3>
+                    <p className="text-[12px] text-[var(--color-text-muted)]">Rekening Bank</p>
                   </div>
                 </div>
 
-                {/* Three-dot Menu Button */}
+                {/* Three-dot Menu Button (Kebab Menu) */}
                 <button
                   onClick={() => setDeleteConfirm(deleteConfirm === wallet.id ? null : wallet.id)}
-                  className="text-[24px] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                  className="text-[20px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] -mt-1"
                 >
                   ⋮
                 </button>
@@ -169,30 +169,30 @@ export default function WalletsPage() {
               {/* Balance */}
               {summary && (
                 <>
-                  <div className="mb-4">
-                    <p className="text-[32px] font-bold">
+                  <div className="mb-3">
+                    <p className="text-[28px] font-bold leading-tight">
                       {formatIDR(summary.net)}
                     </p>
                   </div>
 
                   {/* Income & Expense Row */}
-                  <div className="flex gap-6">
+                  <div className="flex gap-4">
                     {/* Income */}
                     <div className="flex-1">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[var(--color-positive)]">↗</span>
-                        <span className="text-[13px] text-[var(--color-positive)]">Pemasukan</span>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <span className="text-[var(--color-positive)] text-[14px]">↗</span>
+                        <span className="text-[12px] text-[var(--color-positive)]">Pemasukan</span>
                       </div>
-                      <p className="text-[16px] font-medium">{formatIDR(summary.income)}</p>
+                      <p className="text-[15px] font-medium">{formatIDR(summary.income)}</p>
                     </div>
 
                     {/* Expense */}
                     <div className="flex-1">
-                      <div className="flex items-center gap-1.5 mb-1">
-                        <span className="text-[var(--color-negative)]">↘</span>
-                        <span className="text-[13px] text-[var(--color-negative)]">Pengeluaran</span>
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <span className="text-[var(--color-negative)] text-[14px]">↘</span>
+                        <span className="text-[12px] text-[var(--color-negative)]">Pengeluaran</span>
                       </div>
-                      <p className="text-[16px] font-medium">{formatIDR(summary.expense)}</p>
+                      <p className="text-[15px] font-medium">{formatIDR(summary.expense)}</p>
                     </div>
                   </div>
                 </>

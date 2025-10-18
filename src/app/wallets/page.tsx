@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { deleteWalletAction } from '@/actions/wallets';
 import { useRouter } from 'next/navigation';
+import AddWalletModal from '@/components/AddWalletModal';
 
 interface Wallet {
   id: number;
@@ -23,9 +24,7 @@ export default function WalletsPage() {
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [walletSummaries, setWalletSummaries] = useState<Record<number, WalletSummary>>({});
   const [loading, setLoading] = useState(true);
-  const [showForm, setShowForm] = useState(false);
-  const [newWalletName, setNewWalletName] = useState('');
-  const [submitting, setSubmitting] = useState(false);
+  const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const fetchWallets = async () => {

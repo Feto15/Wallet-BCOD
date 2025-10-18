@@ -52,16 +52,21 @@ export default function AddWalletModal({ isOpen, onClose, onSuccess }: AddWallet
       // 2. If initial balance > 0, create initial transaction
       if (parsedBalance > 0) {
         console.log('Creating initial balance transaction:', parsedBalance);
+        
+        // Format date as YYYY-MM-DD HH:mm for API
+        const now = new Date();
+        const occurredAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        
         const transactionRes = await fetch('/api/transactions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            walletId: newWallet.id,
-            categoryId: null, // Uncategorized
+            wallet_id: newWallet.id,
+            category_id: null, // Uncategorized
             type: 'income',
             amount: parsedBalance,
             note: 'Saldo awal',
-            occurredAt: new Date().toISOString(),
+            occurred_at: occurredAt,
           }),
         });
 

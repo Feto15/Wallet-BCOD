@@ -90,17 +90,19 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Check category (v1.2: removed isArchived check)
-      const [category] = await db
-        .select()
-        .from(categories)
-        .where(eq(categories.id, validated.category_id));
-      
-      if (!category) {
-        return NextResponse.json(
-          { error: 'Kategori tidak ditemukan' },
-          { status: 404 }
-        );
+      // Check category if provided (v1.2: allow null category for uncategorized transactions)
+      if (validated.category_id !== null) {
+        const [category] = await db
+          .select()
+          .from(categories)
+          .where(eq(categories.id, validated.category_id));
+        
+        if (!category) {
+          return NextResponse.json(
+            { error: 'Kategori tidak ditemukan' },
+            { status: 404 }
+          );
+        }
       }
 
       // Create expense or income transaction

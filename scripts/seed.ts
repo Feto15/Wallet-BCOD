@@ -159,7 +159,7 @@ async function seed() {
 }
 
 seed();
-ed failed:', error);
+, error);
     process.exit(1);
   }
 }

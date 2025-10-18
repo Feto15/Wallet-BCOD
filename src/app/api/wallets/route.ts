@@ -1,22 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { wallets } from '@/db/schema';
-import { walletCreateSchema, walletQuerySchema } from '@/lib/validation';
-import { eq } from 'drizzle-orm';
+import { walletCreateSchema } from '@/lib/validation';
 
 export async function GET(request: NextRequest) {
   try {
-    const searchParams = request.nextUrl.searchParams;
-    const query = walletQuerySchema.parse({
-      include_archived: searchParams.get('include_archived') || 'false',
-    });
-
-    const includeArchived = query.include_archived === 'true';
-
-    const results = includeArchived
-      ? await db.select().from(wallets)
-      : await db.select().from(wallets).where(eq(wallets.isArchived, false));
-
+    // v1.2: removed isArchived filtering, just return all wallets
+    const results = await db.select().from(wallets);
     return NextResponse.json(results);
   } catch (error) {
     if (error instanceof Error) {

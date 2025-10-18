@@ -34,30 +34,17 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = categoryCreateSchema.parse(body);
 
+    // v1.2: removed isArchived field
     const [newCategory] = await db
       .insert(categories)
       .values({
         name: validated.name,
         type: validated.type,
-        isArchived: false,
       })
       .returning();
 
     return NextResponse.json(newCategory, { status: 201 });
   } catch (error) {
-    if (error instanceof Error) {
-      return NextResponse.json(
-        { error: 'Gagal membuat kategori', details: error.message },
-        { status: 400 }
-      );
-    }
-    return NextResponse.json(
-      { error: 'Terjadi kesalahan server' },
-      { status: 500 }
-    );
-  }
-}
- {
     if (error instanceof Error) {
       return NextResponse.json(
         { error: 'Gagal membuat kategori', details: error.message },

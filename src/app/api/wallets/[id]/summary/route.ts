@@ -72,14 +72,14 @@ export async function GET(
     }
 
     // Perform aggregation query
-    // Join with categories to determine income/expense type
+    // Use transaction.type directly (v1.2: support uncategorized transactions)
     const [summary] = await db
       .select({
         income: sql<number>`
           COALESCE(
             SUM(
               CASE 
-                WHEN ${categories.type} = 'income' 
+                WHEN ${transactions.type} = 'income' 
                 THEN ${transactions.amount} 
                 ELSE 0 
               END
@@ -91,7 +91,7 @@ export async function GET(
           COALESCE(
             SUM(
               CASE 
-                WHEN ${categories.type} = 'expense' 
+                WHEN ${transactions.type} = 'expense' 
                 THEN ${transactions.amount} 
                 ELSE 0 
               END

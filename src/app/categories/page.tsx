@@ -38,32 +38,8 @@ export default function CategoriesPage() {
     fetchCategories();
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCategory.name.trim()) return;
-
-    try {
-      setSubmitting(true);
-      const res = await fetch('/api/categories', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newCategory),
-      });
-
-      if (res.ok) {
-        setNewCategory({ name: '', type: 'expense' });
-        setShowForm(false);
-        await fetchCategories();
-      } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to create category');
-      }
-    } catch (error) {
-      console.error('Failed to create category:', error);
-      alert('Failed to create category');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleModalSuccess = async () => {
+    await fetchCategories();
   };
 
   // v1.2: Hard delete with SET NULL behavior for transactions

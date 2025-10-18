@@ -51,6 +51,7 @@ export default function AddWalletModal({ isOpen, onClose, onSuccess }: AddWallet
 
       // 2. If initial balance > 0, create initial transaction
       if (parsedBalance > 0) {
+        console.log('Creating initial balance transaction:', parsedBalance);
         const transactionRes = await fetch('/api/transactions', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -65,9 +66,15 @@ export default function AddWalletModal({ isOpen, onClose, onSuccess }: AddWallet
         });
 
         if (!transactionRes.ok) {
-          console.error('Failed to create initial balance transaction');
+          const errorData = await transactionRes.json();
+          console.error('Failed to create initial balance transaction:', errorData);
           // Don't fail the whole operation, wallet is already created
+          alert(`Wallet created but failed to add initial balance: ${errorData.error || 'Unknown error'}`);
+        } else {
+          console.log('Initial balance transaction created successfully');
         }
+      } else {
+        console.log('No initial balance specified, parsedBalance:', parsedBalance);
       }
 
       // Success

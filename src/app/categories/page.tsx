@@ -1,26 +1,31 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { deleteCategoryAction } from '@/actions/categories';
 
+// v1.2: removed isArchived field
 interface Category {
   id: number;
   name: string;
   type: 'expense' | 'income';
-  isArchived: boolean;
   createdAt: string;
 }
 
 export default function CategoriesPage() {
+  const router = useRouter();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [newCategory, setNewCategory] = useState({ name: '', type: 'expense' as 'expense' | 'income' });
   const [submitting, setSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/categories?include_archived=true');
+      // v1.2: removed include_archived parameter
+      const res = await fetch('/api/categories');
       const data = await res.json();
       setCategories(data);
     } catch (error) {
@@ -62,6 +67,7 @@ export default function CategoriesPage() {
     }
   };
 
+  // v1.2: Hard delete with SET NULL behavior for transactions
   const handleDelete = async (id: number, name: string) => {
     try {
       const formData = new FormData();
@@ -70,7 +76,7 @@ export default function CategoriesPage() {
       const result = await deleteCategoryAction(formData);
 
       if (result.success) {
-        alert(result.message || 'Category deleted successfully');
+        alert(result.message || 'Category deleted. Transactions moved to uncategorized.');
         setDeleteConfirm(null);
         await fetchCategories();
         router.refresh();
@@ -175,22 +181,31 @@ export default function CategoriesPage() {
             >
               <div className="flex items-center justify-between">
                 <p className="text-[16px] font-semibold">{category.name}</p>
-                <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium ${
-                    category.isArchived
-                      ? 'bg-[rgba(115,115,115,0.2)] text-[var(--color-text-muted)]'
-                      : 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
-                  }`}
-                >
-                  {category.isArchived ? 'Archived' : 'Expense'}
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]">
+                  Expense
                 </span>
               </div>
-              {!category.isArchived && (
+              {deleteConfirm === category.id ? (
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    onClick={() => handleDelete(category.id, category.name)}
+                    className="rounded-full bg-[var(--color-negative)] px-4 py-1.5 text-[12px] font-semibold text-white transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                  >
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(null)}
+                    className="rounded-full bg-[var(--color-divider)] px-4 py-1.5 text-[12px] font-semibold text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={() => handleArchive(category.id)}
+                  onClick={() => setDeleteConfirm(category.id)}
                   className="mt-3 text-[12px] text-[var(--color-negative)] underline"
                 >
-                  Archive category
+                  Delete category
                 </button>
               )}
             </div>
@@ -214,46 +229,31 @@ export default function CategoriesPage() {
             >
               <div className="flex items-center justify-between">
                 <p className="text-[16px] font-semibold">{category.name}</p>
-                <span
-                  className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium ${
-                    category.isArchived
-                      ? 'bg-[rgba(115,115,115,0.2)] text-[var(--color-text-muted)]'
-                      : 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
-                  }`}
-                >
-                  {category.isArchived ? 'Archived' : 'Income'}
+                <span className="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]">
+                  Income
                 </span>
               </div>
-              {!category.isArchived && (
+              {deleteConfirm === category.id ? (
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    onClick={() => handleDelete(category.id, category.name)}
+                    className="rounded-full bg-[var(--color-negative)] px-4 py-1.5 text-[12px] font-semibold text-white transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                  >
+                    Confirm Delete
+                  </button>
+                  <button
+                    onClick={() => setDeleteConfirm(null)}
+                    className="rounded-full bg-[var(--color-divider)] px-4 py-1.5 text-[12px] font-semibold text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              ) : (
                 <button
-                  onClick={() => handleArchive(category.id)}
+                  onClick={() => setDeleteConfirm(category.id)}
                   className="mt-3 text-[12px] text-[var(--color-negative)] underline"
                 >
-                  Archive category
-                </button>
-              )}
-            </div>
-          ))}
-
-          {incomeCategories.length === 0 && (
-            <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">
-              <p>No income categories yet.</p>
-            </div>
-          )}
-        </div>
-      </section>
-    </div>
-  );
-}
-             {category.isArchived ? 'Archived' : 'Income'}
-                </span>
-              </div>
-              {!category.isArchived && (
-                <button
-                  onClick={() => handleArchive(category.id)}
-                  className="mt-3 text-[12px] text-[var(--color-negative)] underline"
-                >
-                  Archive category
+                  Delete category
                 </button>
               )}
             </div>

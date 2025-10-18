@@ -138,73 +138,117 @@ export default function WalletsPage() {
           return (
             <div
               key={wallet.id}
-              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
+              className="rounded-[20px] bg-[var(--color-card)] p-5 shadow-[var(--shadow-md)]"
             >
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <p className="text-[16px] font-semibold">{wallet.name}</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)]">{wallet.currency}</p>
+              {/* Header: Icon, Name & Menu */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  {/* Wallet Icon */}
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-600">
+                    <svg className="h-7 w-7 text-white" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                    </svg>
+                  </div>
+                  
+                  {/* Wallet Name & Type */}
+                  <div>
+                    <h3 className="text-[18px] font-semibold">{wallet.name}</h3>
+                    <p className="text-[13px] text-[var(--color-text-muted)]">Rekening Bank</p>
+                  </div>
                 </div>
+
+                {/* Three-dot Menu Button */}
+                <button
+                  onClick={() => setDeleteConfirm(deleteConfirm === wallet.id ? null : wallet.id)}
+                  className="text-[24px] text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+                >
+                  ⋮
+                </button>
               </div>
 
-              {/* Wallet Summary */}
+              {/* Balance */}
               {summary && (
-                <div className="mt-3 space-y-2 border-t border-[var(--color-divider)] pt-3">
-                  <div className="flex justify-between text-[14px]">
-                    <span className="text-[var(--color-text-muted)]">Income</span>
-                    <span className="text-[var(--color-positive)] font-medium">
-                      +{formatIDR(summary.income)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[14px]">
-                    <span className="text-[var(--color-text-muted)]">Expense</span>
-                    <span className="text-[var(--color-negative)] font-medium">
-                      -{formatIDR(summary.expense)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-[14px] font-semibold">
-                    <span>Net</span>
-                    <span className={summary.net >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}>
+                <>
+                  <div className="mb-4">
+                    <p className="text-[32px] font-bold">
                       {formatIDR(summary.net)}
-                    </span>
+                    </p>
                   </div>
-                  {summary.uncategorized > 0 && (
-                    <div className="flex justify-between text-[12px]">
-                      <span className="text-[var(--color-text-muted)]">Uncategorized</span>
-                      <span className="text-[var(--color-text-muted)]">
-                        {formatIDR(summary.uncategorized)}
-                      </span>
+
+                  {/* Income & Expense Row */}
+                  <div className="flex gap-6">
+                    {/* Income */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[var(--color-positive)]">↗</span>
+                        <span className="text-[13px] text-[var(--color-positive)]">Pemasukan</span>
+                      </div>
+                      <p className="text-[16px] font-medium">{formatIDR(summary.income)}</p>
                     </div>
-                  )}
-                </div>
+
+                    {/* Expense */}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="text-[var(--color-negative)]">↘</span>
+                        <span className="text-[13px] text-[var(--color-negative)]">Pengeluaran</span>
+                      </div>
+                      <p className="text-[16px] font-medium">{formatIDR(summary.expense)}</p>
+                    </div>
+                  </div>
+                </>
               )}
 
-              {/* Delete Button */}
-              <div className="mt-3 pt-3 border-t border-[var(--color-divider)]">
-                {deleteConfirm === wallet.id ? (
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDelete(wallet.id, wallet.name)}
-                      className="flex-1 rounded-full bg-[var(--color-negative)] px-3 py-2 text-[14px] font-semibold text-white transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
-                    >
-                      Confirm Delete
-                    </button>
-                    <button
-                      onClick={() => setDeleteConfirm(null)}
-                      className="flex-1 rounded-full bg-[#2E2E2E] px-3 py-2 text-[14px] font-semibold text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    onClick={() => setDeleteConfirm(wallet.id)}
-                    className="text-[12px] text-[var(--color-negative)] underline"
+              {/* Bottom Sheet Options */}
+              {deleteConfirm === wallet.id && (
+                <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setDeleteConfirm(null)}>
+                  {/* Backdrop */}
+                  <div className="absolute inset-0 bg-black/60" />
+                  
+                  {/* Bottom Sheet */}
+                  <div 
+                    className="relative w-full max-w-[390px] rounded-t-[24px] bg-[var(--color-surface)] pb-6"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    Delete wallet
-                  </button>
-                )}
-              </div>
+                    {/* Handle Bar */}
+                    <div className="flex justify-center py-3">
+                      <div className="h-1 w-12 rounded-full bg-[var(--color-divider)]" />
+                    </div>
+
+                    {/* Title */}
+                    <div className="px-6 pb-2">
+                      <h3 className="text-[18px] font-semibold">Opsi</h3>
+                    </div>
+
+                    {/* Options */}
+                    <div className="border-t border-[var(--color-divider)]">
+                      {/* Edit Option */}
+                      <button
+                        className="flex w-full items-center gap-3 px-6 py-4 text-left hover:bg-[rgba(255,255,255,0.05)]"
+                        onClick={() => {
+                          alert('Edit feature coming soon!');
+                          setDeleteConfirm(null);
+                        }}
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                        <span className="text-[16px]">Edit Dompet</span>
+                      </button>
+
+                      {/* Delete Option */}
+                      <button
+                        className="flex w-full items-center gap-3 px-6 py-4 text-left text-[var(--color-negative)] hover:bg-[rgba(239,68,68,0.1)]"
+                        onClick={() => handleDelete(wallet.id, wallet.name)}
+                      >
+                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        <span className="text-[16px]">Hapus Dompet</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           );
         })}

@@ -141,21 +141,21 @@ export default function Dashboard() {
 
           <div className="grid gap-3">
             <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-[16px] bg-[rgba(34,197,94,0.15)] p-4">
-                <p className="text-[12px] text-[var(--color-text-muted)]">Income</p>
-                <p className="mt-1 text-[18px] font-semibold text-[var(--color-text)]">
+              <div className="rounded-[20px] bg-[rgba(34,197,94,0.15)] p-5">
+                <p className="text-[13px] text-[var(--color-text-muted)] mb-2">Income</p>
+                <p className="text-[20px] font-bold text-[var(--color-text)] leading-tight">
                   {formatIDR(monthlySummary.summary.totalIncome)}
                 </p>
               </div>
-              <div className="rounded-[16px] bg-[rgba(239,68,68,0.15)] p-4">
-                <p className="text-[12px] text-[var(--color-text-muted)]">Expense</p>
-                <p className="mt-1 text-[18px] font-semibold text-[var(--color-text)]">
+              <div className="rounded-[20px] bg-[rgba(239,68,68,0.15)] p-5">
+                <p className="text-[13px] text-[var(--color-text-muted)] mb-2">Expense</p>
+                <p className="text-[20px] font-bold text-[var(--color-text)] leading-tight">
                   {formatIDR(monthlySummary.summary.totalExpense)}
                 </p>
               </div>
-              <div className="rounded-[16px] bg-[rgba(167,139,250,0.15)] p-4">
-                <p className="text-[12px] text-[var(--color-text-muted)]">Net</p>
-                <p className={`mt-1 text-[18px] font-semibold ${netTrend >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}`}>
+              <div className="rounded-[20px] bg-[rgba(167,139,250,0.15)] p-5">
+                <p className="text-[13px] text-[var(--color-text-muted)] mb-2">Net</p>
+                <p className={`text-[20px] font-bold leading-tight ${netTrend >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}`}>
                   {formatIDR(monthlySummary.summary.net)}
                 </p>
               </div>

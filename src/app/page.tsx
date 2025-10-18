@@ -140,7 +140,7 @@ export default function Dashboard() {
           </div>
 
           <div className="grid gap-3">
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div className="rounded-[20px] bg-[rgba(34,197,94,0.15)] p-4 min-h-[90px] flex flex-col justify-between">
                 <p className="text-[12px] text-[var(--color-text-muted)] mb-1">Income</p>
                 <p className="text-[16px] font-bold text-[var(--color-text)] leading-tight break-words">
@@ -151,12 +151,6 @@ export default function Dashboard() {
                 <p className="text-[12px] text-[var(--color-text-muted)] mb-1">Expense</p>
                 <p className="text-[16px] font-bold text-[var(--color-text)] leading-tight break-words">
                   {formatIDR(monthlySummary.summary.totalExpense)}
-                </p>
-              </div>
-              <div className="rounded-[20px] bg-[rgba(167,139,250,0.15)] p-4 min-h-[90px] flex flex-col justify-between">
-                <p className="text-[12px] text-[var(--color-text-muted)] mb-1">Net</p>
-                <p className={`text-[16px] font-bold leading-tight break-words ${netTrend >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}`}>
-                  {formatIDR(monthlySummary.summary.net)}
                 </p>
               </div>
             </div>

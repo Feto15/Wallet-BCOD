@@ -99,7 +99,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCate
               htmlFor="category-name"
               className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]"
             >
-              Category Name
+              Nama Kategori
             </label>
             <input
               type="text"
@@ -107,7 +107,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCate
               value={name}
               onChange={(e) => setName(e.target.value)}
               className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-              placeholder="e.g., Transport, Salary"
+              placeholder="Contoh: Transport, Gaji"
               required
               disabled={submitting}
             />

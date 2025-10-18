@@ -174,14 +174,14 @@ export default function AddWalletModal({ isOpen, onClose, onSuccess }: AddWallet
               disabled={submitting}
               className="flex-1 rounded-full bg-[var(--color-divider)] px-4 py-2.5 text-[14px] font-semibold text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95 disabled:opacity-50"
             >
-              Cancel
+              Batal
             </button>
             <button
               type="submit"
               disabled={submitting}
               className="flex-1 rounded-full bg-[var(--color-accent)] px-4 py-2.5 text-[14px] font-semibold text-black transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95 disabled:opacity-50"
             >
-              {submitting ? 'Creating...' : 'Create Wallet'}
+              {submitting ? 'Membuat...' : 'Buat Wallet'}
             </button>
           </div>
         </form>

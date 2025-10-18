@@ -6,13 +6,13 @@ async function seed() {
   console.log('🌱 Starting seed...');
 
   try {
-    // Insert wallets
+    // Insert wallets (v1.2: removed isArchived)
     console.log('Creating wallets...');
     const [bcaWallet, cashWallet] = await db
       .insert(wallets)
       .values([
-        { name: 'BCA', currency: 'IDR', isArchived: false },
-        { name: 'Cash', currency: 'IDR', isArchived: false },
+        { name: 'BCA', currency: 'IDR' },
+        { name: 'Cash', currency: 'IDR' },
       ])
       .returning();
 
@@ -154,12 +154,6 @@ async function seed() {
     process.exit(0);
   } catch (error) {
     console.error('❌ Seed failed:', error);
-    process.exit(1);
-  }
-}
-
-seed();
-, error);
     process.exit(1);
   }
 }

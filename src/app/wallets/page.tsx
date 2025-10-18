@@ -1,28 +1,55 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { deleteWalletAction } from '@/actions/wallets';
+import { useRouter } from 'next/navigation';
 
 interface Wallet {
   id: number;
   name: string;
   currency: string;
-  isArchived: boolean;
   createdAt: string;
 }
 
+interface WalletSummary {
+  income: number;
+  expense: number;
+  net: number;
+  uncategorized: number;
+}
+
 export default function WalletsPage() {
+  const router = useRouter();
   const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [walletSummaries, setWalletSummaries] = useState<Record<number, WalletSummary>>({});
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [newWalletName, setNewWalletName] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
 
   const fetchWallets = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/wallets?include_archived=true');
+      const res = await fetch('/api/wallets');
       const data = await res.json();
       setWallets(data);
+      
+      // Fetch summary for each wallet
+      const summaries: Record<number, WalletSummary> = {};
+      await Promise.all(
+        data.map(async (wallet: Wallet) => {
+          try {
+            const summaryRes = await fetch(`/api/wallets/${wallet.id}/summary`);
+            if (summaryRes.ok) {
+              summaries[wallet.id] = await summaryRes.json();
+            }
+          } catch (err) {
+            console.error(`Failed to fetch summary for wallet ${wallet.id}:`, err);
+          }
+        })
+      );
+      setWalletSummaries(summaries);
     } catch (error) {
       console.error('Failed to fetch wallets:', error);
     } finally {
@@ -62,24 +89,35 @@ export default function WalletsPage() {
     }
   };
 
-  const handleArchive = async (id: number) => {
-    if (!confirm('Are you sure you want to archive this wallet?')) return;
-
+  const handleDelete = async (id: number, name: string) => {
     try {
-      const res = await fetch(`/api/wallets/${id}/archive`, {
-        method: 'PATCH',
-      });
+      const formData = new FormData();
+      formData.append('id', id.toString());
 
-      if (res.ok) {
+      const result = await deleteWalletAction(formData);
+
+      if (result.success) {
+        // Show success message
+        alert(result.message || 'Wallet deleted successfully');
+        setDeleteConfirm(null);
+        // Refresh the list
         await fetchWallets();
+        router.refresh();
       } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to archive wallet');
+        alert(result.error || 'Failed to delete wallet');
       }
     } catch (error) {
-      console.error('Failed to archive wallet:', error);
-      alert('Failed to archive wallet');
+      console.error('Failed to delete wallet:', error);
+      alert('Failed to delete wallet');
     }
+  };
+
+  const formatIDR = (amount: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+    }).format(amount);
   };
 
   if (loading) {
@@ -145,36 +183,81 @@ export default function WalletsPage() {
       )}
 
       <div className="space-y-3">
-        {wallets.map((wallet) => (
-          <div
-            key={wallet.id}
-            className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-[16px] font-semibold">{wallet.name}</p>
-                <p className="text-[12px] text-[var(--color-text-muted)]">{wallet.currency}</p>
+        {wallets.map((wallet) => {
+          const summary = walletSummaries[wallet.id];
+          return (
+            <div
+              key={wallet.id}
+              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
+            >
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-[16px] font-semibold">{wallet.name}</p>
+                  <p className="text-[12px] text-[var(--color-text-muted)]">{wallet.currency}</p>
+                </div>
               </div>
-              <span
-                className={`inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium ${
-                  wallet.isArchived
-                    ? 'bg-[rgba(115,115,115,0.2)] text-[var(--color-text-muted)]'
-                    : 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
-                }`}
-              >
-                {wallet.isArchived ? 'Archived' : 'Active'}
-              </span>
+
+              {/* Wallet Summary */}
+              {summary && (
+                <div className="mt-3 space-y-2 border-t border-[var(--color-divider)] pt-3">
+                  <div className="flex justify-between text-[14px]">
+                    <span className="text-[var(--color-text-muted)]">Income</span>
+                    <span className="text-[var(--color-positive)] font-medium">
+                      +{formatIDR(summary.income)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[14px]">
+                    <span className="text-[var(--color-text-muted)]">Expense</span>
+                    <span className="text-[var(--color-negative)] font-medium">
+                      -{formatIDR(summary.expense)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-[14px] font-semibold">
+                    <span>Net</span>
+                    <span className={summary.net >= 0 ? 'text-[var(--color-positive)]' : 'text-[var(--color-negative)]'}>
+                      {formatIDR(summary.net)}
+                    </span>
+                  </div>
+                  {summary.uncategorized > 0 && (
+                    <div className="flex justify-between text-[12px]">
+                      <span className="text-[var(--color-text-muted)]">Uncategorized</span>
+                      <span className="text-[var(--color-text-muted)]">
+                        {formatIDR(summary.uncategorized)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Delete Button */}
+              <div className="mt-3 pt-3 border-t border-[var(--color-divider)]">
+                {deleteConfirm === wallet.id ? (
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => handleDelete(wallet.id, wallet.name)}
+                      className="flex-1 rounded-full bg-[var(--color-negative)] px-3 py-2 text-[14px] font-semibold text-white transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                    >
+                      Confirm Delete
+                    </button>
+                    <button
+                      onClick={() => setDeleteConfirm(null)}
+                      className="flex-1 rounded-full bg-[#2E2E2E] px-3 py-2 text-[14px] font-semibold text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => setDeleteConfirm(wallet.id)}
+                    className="text-[12px] text-[var(--color-negative)] underline"
+                  >
+                    Delete wallet
+                  </button>
+                )}
+              </div>
             </div>
-            {!wallet.isArchived && (
-              <button
-                onClick={() => handleArchive(wallet.id)}
-                className="mt-3 text-[12px] text-[var(--color-negative)] underline"
-              >
-                Archive wallet
-              </button>
-            )}
-          </div>
-        ))}
+          );
+        })}
 
         {wallets.length === 0 && (
           <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">

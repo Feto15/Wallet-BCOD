@@ -8,6 +8,20 @@
       "when": 1760689810155,
       "tag": "0000_daily_turbo",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1760790882922,
+      "tag": "0001_dazzling_whirlwind",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760790904023,
+      "tag": "0002_tan_jean_grey",
+      "breakpoints": true
     }
   ]
 }

@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
       wallet_id: searchParams.get('wallet_id') || undefined,
     });
 
-    // Get all active wallets or specific wallet
-    const conditions = [eq(wallets.isArchived, false)];
+    // v1.2: Get all wallets (no archive filtering)
+    const conditions = [];
     
     if (query.wallet_id) {
       conditions.push(eq(wallets.id, query.wallet_id));
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const walletsList = await db
       .select()
       .from(wallets)
-      .where(and(...conditions));
+      .where(conditions.length > 0 ? and(...conditions) : undefined);
 
     // Calculate balance for each wallet
     const balances = await Promise.all(

@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Validate wallets and categories are not archived
     if (validated.type === 'expense' || validated.type === 'income') {
-      // Check wallet
+      // Check wallet (v1.2: removed isArchived check)
       const [wallet] = await db
         .select()
         .from(wallets)
@@ -89,15 +89,8 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
-      
-      if (wallet.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan wallet yang diarsipkan' },
-          { status: 400 }
-        );
-      }
 
-      // Check category
+      // Check category (v1.2: removed isArchived check)
       const [category] = await db
         .select()
         .from(categories)
@@ -107,13 +100,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: 'Kategori tidak ditemukan' },
           { status: 404 }
-        );
-      }
-      
-      if (category.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan kategori yang diarsipkan' },
-          { status: 400 }
         );
       }
 

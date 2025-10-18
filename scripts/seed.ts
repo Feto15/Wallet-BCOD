@@ -18,22 +18,22 @@ async function seed() {
 
     console.log(`✅ Created wallets: ${bcaWallet.name}, ${cashWallet.name}`);
 
-    // Insert categories
+    // Insert categories (v1.2: removed isArchived)
     console.log('Creating categories...');
     const expenseCategories = await db
       .insert(categories)
       .values([
-        { name: 'Makan & Minum', type: 'expense', isArchived: false },
-        { name: 'Transport', type: 'expense', isArchived: false },
-        { name: 'Belanja Rumah', type: 'expense', isArchived: false },
+        { name: 'Makan & Minum', type: 'expense' },
+        { name: 'Transport', type: 'expense' },
+        { name: 'Belanja Rumah', type: 'expense' },
       ])
       .returning();
 
     const incomeCategories = await db
       .insert(categories)
       .values([
-        { name: 'Gaji', type: 'income', isArchived: false },
-        { name: 'Lain-lain', type: 'income', isArchived: false },
+        { name: 'Gaji', type: 'income' },
+        { name: 'Lain-lain', type: 'income' },
       ])
       .returning();
 
@@ -154,6 +154,12 @@ async function seed() {
     process.exit(0);
   } catch (error) {
     console.error('❌ Seed failed:', error);
+    process.exit(1);
+  }
+}
+
+seed();
+ed failed:', error);
     process.exit(1);
   }
 }

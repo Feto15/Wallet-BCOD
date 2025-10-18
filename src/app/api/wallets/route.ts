@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
       .values({
         name: validated.name,
         currency: 'IDR',
-        isArchived: false,
       })
       .returning();
 

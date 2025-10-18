@@ -62,23 +62,24 @@ export default function CategoriesPage() {
     }
   };
 
-  const handleArchive = async (id: number) => {
-    if (!confirm('Are you sure you want to archive this category?')) return;
-
+  const handleDelete = async (id: number, name: string) => {
     try {
-      const res = await fetch(`/api/categories/${id}/archive`, {
-        method: 'PATCH',
-      });
+      const formData = new FormData();
+      formData.append('id', id.toString());
 
-      if (res.ok) {
+      const result = await deleteCategoryAction(formData);
+
+      if (result.success) {
+        alert(result.message || 'Category deleted successfully');
+        setDeleteConfirm(null);
         await fetchCategories();
+        router.refresh();
       } else {
-        const error = await res.json();
-        alert(error.error || 'Failed to archive category');
+        alert(result.error || 'Failed to delete category');
       }
     } catch (error) {
-      console.error('Failed to archive category:', error);
-      alert('Failed to archive category');
+      console.error('Failed to delete category:', error);
+      alert('Failed to delete category');
     }
   };
 
@@ -221,6 +222,30 @@ export default function CategoriesPage() {
                   }`}
                 >
                   {category.isArchived ? 'Archived' : 'Income'}
+                </span>
+              </div>
+              {!category.isArchived && (
+                <button
+                  onClick={() => handleArchive(category.id)}
+                  className="mt-3 text-[12px] text-[var(--color-negative)] underline"
+                >
+                  Archive category
+                </button>
+              )}
+            </div>
+          ))}
+
+          {incomeCategories.length === 0 && (
+            <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">
+              <p>No income categories yet.</p>
+            </div>
+          )}
+        </div>
+      </section>
+    </div>
+  );
+}
+             {category.isArchived ? 'Archived' : 'Income'}
                 </span>
               </div>
               {!category.isArchived && (

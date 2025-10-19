@@ -153,7 +153,7 @@ export default function WalletsPage() {
                   {/* Wallet Name & Type */}
                   <div>
                     <h3 className="text-[16px] font-semibold">{wallet.name}</h3>
-                    <p className="text-[12px] text-[var(--color-text-muted)]">Rekening Bank</p>
+                    <p className="text-[12px] text-[var(--color-text-muted)]"></p>
                   </div>
                 </div>
 

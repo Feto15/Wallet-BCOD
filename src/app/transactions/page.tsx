@@ -48,6 +48,7 @@ export default function TransactionsPage() {
 
   useEffect(() => {
     fetchTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   console.log('Render - loading:', loading, 'transactions:', transactions.length);

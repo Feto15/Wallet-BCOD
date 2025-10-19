@@ -26,7 +26,7 @@ export const categoryQuerySchema = z.object({
 export const txCreateExpenseIncomeSchema = z.object({
   type: z.enum(['expense', 'income']),
   wallet_id: z.number().int().positive('Wallet ID harus valid'),
-  category_id: z.number().int().positive('Kategori ID harus valid'),
+  category_id: z.number().int().positive('Kategori ID harus valid').nullable(),
   amount: z.number().int().positive('Jumlah harus lebih dari 0'),
   occurred_at: z.string().regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, 'Format tanggal harus YYYY-MM-DD HH:mm'),
   note: z.string().optional(),

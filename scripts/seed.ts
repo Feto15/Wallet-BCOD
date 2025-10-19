@@ -6,34 +6,34 @@ async function seed() {
   console.log('🌱 Starting seed...');
 
   try {
-    // Insert wallets
+    // Insert wallets (v1.2: removed isArchived)
     console.log('Creating wallets...');
     const [bcaWallet, cashWallet] = await db
       .insert(wallets)
       .values([
-        { name: 'BCA', currency: 'IDR', isArchived: false },
-        { name: 'Cash', currency: 'IDR', isArchived: false },
+        { name: 'BCA', currency: 'IDR' },
+        { name: 'Cash', currency: 'IDR' },
       ])
       .returning();
 
     console.log(`✅ Created wallets: ${bcaWallet.name}, ${cashWallet.name}`);
 
-    // Insert categories
+    // Insert categories (v1.2: removed isArchived)
     console.log('Creating categories...');
     const expenseCategories = await db
       .insert(categories)
       .values([
-        { name: 'Makan & Minum', type: 'expense', isArchived: false },
-        { name: 'Transport', type: 'expense', isArchived: false },
-        { name: 'Belanja Rumah', type: 'expense', isArchived: false },
+        { name: 'Makan & Minum', type: 'expense' },
+        { name: 'Transport', type: 'expense' },
+        { name: 'Belanja Rumah', type: 'expense' },
       ])
       .returning();
 
     const incomeCategories = await db
       .insert(categories)
       .values([
-        { name: 'Gaji', type: 'income', isArchived: false },
-        { name: 'Lain-lain', type: 'income', isArchived: false },
+        { name: 'Gaji', type: 'income' },
+        { name: 'Lain-lain', type: 'income' },
       ])
       .returning();
 

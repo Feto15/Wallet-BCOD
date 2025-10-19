@@ -12,7 +12,6 @@ export const wallets = pgTable('wallets', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   currency: varchar('currency', { length: 3 }).notNull().default('IDR'),
-  isArchived: boolean('is_archived').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -21,7 +20,6 @@ export const categories = pgTable('categories', {
   id: serial('id').primaryKey(),
   name: varchar('name', { length: 255 }).notNull(),
   type: categoryTypeEnum('type').notNull(),
-  isArchived: boolean('is_archived').notNull().default(false),
   createdAt: timestamp('created_at').notNull().defaultNow(),
 });
 
@@ -35,20 +33,20 @@ export const transferGroups = pgTable('transfer_groups', {
 // Tabel Transactions
 export const transactions = pgTable('transactions', {
   id: serial('id').primaryKey(),
-  walletId: integer('wallet_id').notNull().references(() => wallets.id),
-  categoryId: integer('category_id').references(() => categories.id),
+  walletId: integer('wallet_id').notNull().references(() => wallets.id, { onDelete: 'cascade' }),
+  categoryId: integer('category_id').references(() => categories.id, { onDelete: 'set null' }),
   type: txTypeEnum('type').notNull(),
   amount: integer('amount').notNull(),
   note: text('note'),
   occurredAt: timestamp('occurred_at').notNull(),
   createdAt: timestamp('created_at').notNull().defaultNow(),
-  transferGroupId: integer('transfer_group_id').references(() => transferGroups.id),
+  transferGroupId: integer('transfer_group_id').references(() => transferGroups.id, { onDelete: 'cascade' }),
 }, (table) => ({
-  // Indexes
+  // Indexes (v1.2: added wallet_created, category, transfer_group)
   occurredAtIdx: index('transactions_occurred_at_idx').on(table.occurredAt),
-  walletOccurredIdx: index('transactions_wallet_occurred_idx').on(table.walletId, table.occurredAt),
-  categoryOccurredIdx: index('transactions_category_occurred_idx').on(table.categoryId, table.occurredAt),
-  transferGroupIdx: index('transactions_transfer_group_idx').on(table.transferGroupId),
+  walletCreatedIdx: index('idx_tx_wallet_created').on(table.walletId, table.createdAt),
+  categoryIdx: index('idx_tx_category').on(table.categoryId),
+  transferGroupIdx: index('idx_tx_transfer_group').on(table.transferGroupId),
   
   // Constraints
   amountCheck: check('amount_positive', sql`${table.amount} > 0`),

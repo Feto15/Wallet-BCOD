@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { transactions, wallets, categories, transferGroups } from '@/db/schema';
 import { txCreateSchema, txQuerySchema } from '@/lib/validation';
-import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, desc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
 
     // Validate wallets and categories are not archived
     if (validated.type === 'expense' || validated.type === 'income') {
-      // Check wallet
+      // Check wallet (v1.2: removed isArchived check)
       const [wallet] = await db
         .select()
         .from(wallets)
@@ -89,32 +89,20 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
-      
-      if (wallet.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan wallet yang diarsipkan' },
-          { status: 400 }
-        );
-      }
 
-      // Check category
-      const [category] = await db
-        .select()
-        .from(categories)
-        .where(eq(categories.id, validated.category_id));
-      
-      if (!category) {
-        return NextResponse.json(
-          { error: 'Kategori tidak ditemukan' },
-          { status: 404 }
-        );
-      }
-      
-      if (category.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan kategori yang diarsipkan' },
-          { status: 400 }
-        );
+      // Check category if provided (v1.2: allow null category for uncategorized transactions)
+      if (validated.category_id !== null) {
+        const [category] = await db
+          .select()
+          .from(categories)
+          .where(eq(categories.id, validated.category_id));
+        
+        if (!category) {
+          return NextResponse.json(
+            { error: 'Kategori tidak ditemukan' },
+            { status: 404 }
+          );
+        }
       }
 
       // Create expense or income transaction
@@ -144,13 +132,6 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
-      
-      if (fromWallet.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan wallet yang diarsipkan' },
-          { status: 400 }
-        );
-      }
 
       // Check to wallet
       const [toWallet] = await db
@@ -162,13 +143,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: 'Wallet tujuan tidak ditemukan' },
           { status: 404 }
-        );
-      }
-      
-      if (toWallet.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan wallet yang diarsipkan' },
-          { status: 400 }
         );
       }
 

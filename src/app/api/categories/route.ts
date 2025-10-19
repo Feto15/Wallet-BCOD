@@ -1,29 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { categories } from '@/db/schema';
-import { categoryCreateSchema, categoryQuerySchema } from '@/lib/validation';
-import { eq, and } from 'drizzle-orm';
+import { categoryCreateSchema } from '@/lib/validation';
+import { eq } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
+    // v1.2: Removed include_archived parameter - only active categories exist now
     const searchParams = request.nextUrl.searchParams;
-    const query = categoryQuerySchema.parse({
-      type: searchParams.get('type') || undefined,
-      include_archived: searchParams.get('include_archived') || 'false',
-    });
-
-    const includeArchived = query.include_archived === 'true';
+    const typeParam = searchParams.get('type');
     
-    let conditions = [];
-    if (!includeArchived) {
-      conditions.push(eq(categories.isArchived, false));
-    }
-    if (query.type) {
-      conditions.push(eq(categories.type, query.type));
-    }
-
-    const results = conditions.length > 0
-      ? await db.select().from(categories).where(and(...conditions))
+    const results = typeParam
+      ? await db.select().from(categories).where(eq(categories.type, typeParam as 'expense' | 'income'))
       : await db.select().from(categories);
 
     return NextResponse.json(results);
@@ -46,12 +34,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = categoryCreateSchema.parse(body);
 
+    // v1.2: removed isArchived field
     const [newCategory] = await db
       .insert(categories)
       .values({
         name: validated.name,
         type: validated.type,
-        isArchived: false,
       })
       .returning();
 

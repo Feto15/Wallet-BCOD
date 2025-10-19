@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { transactions, wallets, categories, transferGroups } from '@/db/schema';
 import { txCreateSchema, txQuerySchema } from '@/lib/validation';
-import { eq, and, gte, lte, desc, sql } from 'drizzle-orm';
+import { eq, and, gte, lte, desc } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {

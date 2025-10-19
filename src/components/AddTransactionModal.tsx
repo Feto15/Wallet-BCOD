@@ -59,6 +59,7 @@ export default function AddTransactionModal({
       const minutes = String(now.getMinutes()).padStart(2, '0');
       setOccurredAt(`${year}-${month}-${day}T${hours}:${minutes}`);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const fetchWallets = async () => {
@@ -111,7 +112,7 @@ export default function AddTransactionModal({
     try {
       setSubmitting(true);
 
-      let body: any;
+      let body: Record<string, unknown>;
 
       // Convert datetime-local format to API format (YYYY-MM-DD HH:mm)
       const formattedDateTime = occurredAt.replace('T', ' ');

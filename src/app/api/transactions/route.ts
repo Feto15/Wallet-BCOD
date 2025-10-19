@@ -132,13 +132,6 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
-      
-      if (fromWallet.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan wallet yang diarsipkan' },
-          { status: 400 }
-        );
-      }
 
       // Check to wallet
       const [toWallet] = await db
@@ -150,13 +143,6 @@ export async function POST(request: NextRequest) {
         return NextResponse.json(
           { error: 'Wallet tujuan tidak ditemukan' },
           { status: 404 }
-        );
-      }
-      
-      if (toWallet.isArchived) {
-        return NextResponse.json(
-          { error: 'Tidak dapat membuat transaksi dengan wallet yang diarsipkan' },
-          { status: 400 }
         );
       }
 

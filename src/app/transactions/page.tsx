@@ -7,6 +7,22 @@ import { ToastContainer } from '@/components/Toast';
 import AddTransactionModal from '@/components/AddTransactionModal';
 import { useToast } from '@/hooks/useToast';
 
+interface Wallet {
+  id: number;
+  name: string;
+  currency: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Category {
+  id: number;
+  name: string;
+  type: 'expense' | 'income';
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface Transaction {
   id: number;
   walletId: number;
@@ -24,10 +40,41 @@ interface Transaction {
 
 export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [wallets, setWallets] = useState<Wallet[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const toast = useToast();
+
+  // Filter states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState<'all' | 'expense' | 'income'>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedWallet, setSelectedWallet] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
+
+  const fetchWallets = async () => {
+    try {
+      const res = await fetch('/api/wallets');
+      if (!res.ok) throw new Error('Failed to fetch wallets');
+      const data = await res.json();
+      setWallets(data);
+    } catch (error) {
+      console.error('Failed to fetch wallets:', error);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (!res.ok) throw new Error('Failed to fetch categories');
+      const data = await res.json();
+      setCategories(data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
 
   const fetchTransactions = async (options: { silent?: boolean } = {}) => {
     const { silent = false } = options;
@@ -36,7 +83,16 @@ export default function TransactionsPage() {
       if (!silent) {
         setLoading(true);
       }
-      const res = await fetch('/api/transactions');
+
+      // Build query params
+      const params = new URLSearchParams();
+      if (searchQuery) params.append('search', searchQuery);
+      if (activeTab !== 'all') params.append('type', activeTab);
+      if (selectedCategory !== 'all') params.append('category_id', selectedCategory);
+      if (selectedWallet !== 'all') params.append('wallet_id', selectedWallet);
+      params.append('sort', sortBy);
+
+      const res = await fetch(`/api/transactions?${params.toString()}`);
       console.log('Response status:', res.status);
       if (!res.ok) {
         throw new Error(`Failed to fetch transactions (${res.status})`);
@@ -56,9 +112,16 @@ export default function TransactionsPage() {
   };
 
   useEffect(() => {
+    fetchWallets();
+    fetchCategories();
     fetchTransactions();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    fetchTransactions();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery, activeTab, selectedCategory, selectedWallet, sortBy]);
 
   console.log('Render - loading:', loading, 'transactions:', transactions.length);
 
@@ -128,7 +191,7 @@ export default function TransactionsPage() {
         }}
         onError={(message) => toast.error(message)}
       />
-      <div className="space-y-6 pb-16">
+      <div className="space-y-4 pb-16">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
             <h1 className="text-[24px] font-semibold tracking-[0.2px]">Transactions</h1>
@@ -142,6 +205,108 @@ export default function TransactionsPage() {
           >
             + Add
           </button>
+        </div>
+
+        {/* Search Input */}
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Cari transaksi..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full rounded-[20px] bg-[var(--color-surface)] px-4 py-3 pl-11 text-[14px] text-white placeholder-[var(--color-text-muted)] shadow-[var(--shadow-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          />
+          <svg
+            className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-muted)]"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+        </div>
+
+        {/* Type Tabs */}
+        <div className="flex gap-2 rounded-[20px] bg-[var(--color-surface)] p-1.5 shadow-[var(--shadow-md)]">
+          <button
+            onClick={() => setActiveTab('all')}
+            className={`flex-1 rounded-[16px] px-4 py-2.5 text-[14px] font-semibold transition-all duration-200 ${
+              activeTab === 'all'
+                ? 'bg-[var(--color-accent)] text-black'
+                : 'text-[var(--color-text-muted)] hover:text-white'
+            }`}
+          >
+            Semua
+          </button>
+          <button
+            onClick={() => setActiveTab('income')}
+            className={`flex-1 rounded-[16px] px-4 py-2.5 text-[14px] font-semibold transition-all duration-200 ${
+              activeTab === 'income'
+                ? 'bg-[var(--color-accent)] text-black'
+                : 'text-[var(--color-text-muted)] hover:text-white'
+            }`}
+          >
+            Pemasukan
+          </button>
+          <button
+            onClick={() => setActiveTab('expense')}
+            className={`flex-1 rounded-[16px] px-4 py-2.5 text-[14px] font-semibold transition-all duration-200 ${
+              activeTab === 'expense'
+                ? 'bg-[var(--color-accent)] text-black'
+                : 'text-[var(--color-text-muted)] hover:text-white'
+            }`}
+          >
+            Pengeluaran
+          </button>
+        </div>
+
+        {/* Filter Dropdowns */}
+        <div className="grid grid-cols-3 gap-3">
+          {/* Category Dropdown */}
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="rounded-[16px] bg-[var(--color-surface)] px-3 py-2.5 text-[13px] text-white shadow-[var(--shadow-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          >
+            <option value="all">Semua Kategori</option>
+            {categories
+              .filter((cat) => activeTab === 'all' || cat.type === activeTab)
+              .map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+          </select>
+
+          {/* Wallet Dropdown */}
+          <select
+            value={selectedWallet}
+            onChange={(e) => setSelectedWallet(e.target.value)}
+            className="rounded-[16px] bg-[var(--color-surface)] px-3 py-2.5 text-[13px] text-white shadow-[var(--shadow-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          >
+            <option value="all">Semua Wallet</option>
+            {wallets.map((wallet) => (
+              <option key={wallet.id} value={wallet.id}>
+                {wallet.name}
+              </option>
+            ))}
+          </select>
+
+          {/* Sort Dropdown */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as 'newest' | 'oldest' | 'highest' | 'lowest')}
+            className="rounded-[16px] bg-[var(--color-surface)] px-3 py-2.5 text-[13px] text-white shadow-[var(--shadow-md)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
+          >
+            <option value="newest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+            <option value="highest">Terbesar</option>
+            <option value="lowest">Terkecil</option>
+          </select>
         </div>
 
         <div className="space-y-3">

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { transactions, wallets, categories, transferGroups } from '@/db/schema';
 import { txCreateSchema, txQuerySchema } from '@/lib/validation';
-import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, asc, or, ilike } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,6 +13,8 @@ export async function GET(request: NextRequest) {
       category_id: searchParams.get('category_id') || undefined,
       date_from: searchParams.get('date_from') || undefined,
       date_to: searchParams.get('date_to') || undefined,
+      sort: searchParams.get('sort') || undefined,
+      search: searchParams.get('search') || undefined,
     });
 
     // Build WHERE conditions
@@ -31,6 +33,33 @@ export async function GET(request: NextRequest) {
     }
     if (query.date_to) {
       conditions.push(lte(transactions.occurredAt, new Date(query.date_to + ' 23:59:59')));
+    }
+    if (query.search) {
+      conditions.push(
+        or(
+          ilike(wallets.name, `%${query.search}%`),
+          ilike(categories.name, `%${query.search}%`),
+          ilike(transactions.note, `%${query.search}%`)
+        )
+      );
+    }
+
+    // Determine sorting
+    let orderByClause;
+    switch (query.sort) {
+      case 'oldest':
+        orderByClause = asc(transactions.occurredAt);
+        break;
+      case 'highest':
+        orderByClause = desc(transactions.amount);
+        break;
+      case 'lowest':
+        orderByClause = asc(transactions.amount);
+        break;
+      case 'newest':
+      default:
+        orderByClause = desc(transactions.occurredAt);
+        break;
     }
 
     // Query with joins
@@ -53,7 +82,7 @@ export async function GET(request: NextRequest) {
       .leftJoin(wallets, eq(transactions.walletId, wallets.id))
       .leftJoin(categories, eq(transactions.categoryId, categories.id))
       .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(desc(transactions.occurredAt));
+      .orderBy(orderByClause);
 
     return NextResponse.json(results);
   } catch (error) {

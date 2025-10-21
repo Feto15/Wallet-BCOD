@@ -56,6 +56,8 @@ export const txQuerySchema = z.object({
   category_id: z.string().transform(Number).pipe(z.number().int().positive()).optional(),
   date_from: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
   date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  sort: z.enum(['newest', 'oldest', 'highest', 'lowest']).optional().default('newest'),
+  search: z.string().optional(),
 });
 
 export const txIdParamSchema = z.object({

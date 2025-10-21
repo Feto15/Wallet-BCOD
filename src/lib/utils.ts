@@ -1,3 +1,13 @@
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+/**
+ * Combine classNames conditionally (shadcn/ui version)
+ */
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+
 /**
  * Format integer amount to IDR currency string
  * @param amount - Amount in integer (e.g., 50000)
@@ -64,13 +74,4 @@ export function getCurrentMonth(): string {
   const month = String(now.getMonth() + 1).padStart(2, '0');
   
   return `${year}-${month}`;
-}
-
-/**
- * Combine classNames conditionally
- * @param classes - Class names to combine
- * @returns Combined class string
- */
-export function cn(...classes: (string | boolean | undefined)[]): string {
-  return classes.filter(Boolean).join(' ');
 }

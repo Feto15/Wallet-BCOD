@@ -1,0 +1,36 @@
+feat: integrate shadcn/ui for modals and selects
+
+## Changes
+- Install shadcn/ui with Dialog, Select, and Sonner components
+- Migrate AddTransactionModal to use shadcn/ui Dialog + custom Select
+- Migrate AddWalletModal to use shadcn/ui Dialog
+- Migrate AddCategoryModal to use shadcn/ui Dialog
+- Replace all native <select> elements with CustomSelect (Radix-based)
+- Restore utils.ts functions after shadcn init override
+- Keep custom Toast implementation (lighter, already themed)
+
+## Benefits
+- ✅ Improved accessibility (focus trap, keyboard nav, ARIA)
+- ✅ Better iOS compatibility (styleable select dropdowns)
+- ✅ Consistent animations and styling
+- ✅ Type-safe with full TypeScript support
+
+## Testing
+- ✅ Production build successful (pnpm build)
+- ⚠️ ESLint config issue (known Next.js 15.5 + ESLint 9 issue)
+- Manual testing required: see SHADCN_MIGRATION.md
+
+## Files Modified
+- src/components/AddTransactionModal.tsx
+- src/components/AddWalletModal.tsx
+- src/components/AddCategoryModal.tsx
+- src/lib/utils.ts
+- src/app/globals.css
+
+## Files Created
+- src/components/ui/dialog.tsx
+- src/components/ui/select.tsx
+- src/components/ui/sonner.tsx
+- src/components/ui/custom-select.tsx
+- components.json
+- SHADCN_MIGRATION.md

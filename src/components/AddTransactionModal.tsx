@@ -2,6 +2,14 @@
 
 import { useState, useEffect } from 'react';
 import { parseMoneyInput, formatIDR } from '@/lib/utils';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { CustomSelect } from '@/components/ui/custom-select';
 
 interface Wallet {
   id: number;
@@ -181,31 +189,24 @@ export default function AddTransactionModal({
     onClose();
   };
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div
-        className="fixed inset-0 bg-[rgba(13,13,13,0.85)]"
-        onClick={handleClose}
-      />
-
-      <div className="relative z-10 w-full max-w-[420px] max-h-[92vh] overflow-y-auto rounded-[24px] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-lg)]">
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="w-full max-w-[420px] max-h-[92vh] overflow-y-auto rounded-[24px] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-lg)] border-[var(--color-divider)]" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
+          <div className="space-y-1">
+            <DialogTitle className="text-[20px] font-semibold text-[var(--color-text)]">Add transaction</DialogTitle>
+            <DialogDescription className="text-[12px] text-[var(--color-text-muted)]">Capture income, expense, or transfer</DialogDescription>
+          </div>
+          <button
+            type="button"
+            onClick={handleClose}
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2D2D2D] text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-5">
-          <header className="flex items-start justify-between">
-            <div>
-              <h3 className="text-[20px] font-semibold">Add transaction</h3>
-              <p className="text-[12px] text-[var(--color-text-muted)]">Capture income, expense, or transfer</p>
-            </div>
-            <button
-              type="button"
-              onClick={handleClose}
-              className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[#2D2D2D] text-[var(--color-text)] transition-all duration-200 ease-in-out hover:brightness-110 active:scale-95"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </header>
 
           {validationError && (
             <div className="rounded-[16px] border border-[var(--color-negative)] bg-[rgba(239,68,68,0.15)] px-4 py-3 text-[12px] text-[var(--color-negative)]">
@@ -249,44 +250,32 @@ export default function AddTransactionModal({
                 <label htmlFor="fromWallet" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
                   From wallet
                 </label>
-                <select
+                <CustomSelect
                   id="fromWallet"
                   value={fromWalletId}
-                  onChange={(e) => setFromWalletId(e.target.value)}
-                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                  required
+                  onValueChange={setFromWalletId}
+                  options={wallets.map((w) => ({ value: w.id.toString(), label: w.name }))}
+                  placeholder={loadingWallets ? 'Loading...' : 'Select wallet'}
                   disabled={loadingWallets}
-                >
-                  <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
-                  {wallets.map((wallet) => (
-                    <option key={wallet.id} value={wallet.id}>
-                      {wallet.name}
-                    </option>
-                  ))}
-                </select>
+                  required
+                />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="toWallet" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
                   To wallet
                 </label>
-                <select
+                <CustomSelect
                   id="toWallet"
                   value={toWalletId}
-                  onChange={(e) => setToWalletId(e.target.value)}
-                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                  required
-                  disabled={loadingWallets}
-                >
-                  <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
-                  {wallets
+                  onValueChange={setToWalletId}
+                  options={wallets
                     .filter((w) => w.id.toString() !== fromWalletId)
-                    .map((wallet) => (
-                      <option key={wallet.id} value={wallet.id}>
-                        {wallet.name}
-                      </option>
-                    ))}
-                </select>
+                    .map((w) => ({ value: w.id.toString(), label: w.name }))}
+                  placeholder={loadingWallets ? 'Loading...' : 'Select wallet'}
+                  disabled={loadingWallets}
+                  required
+                />
               </div>
             </div>
           ) : (
@@ -295,42 +284,30 @@ export default function AddTransactionModal({
                 <label htmlFor="wallet" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
                   Wallet
                 </label>
-                <select
+                <CustomSelect
                   id="wallet"
                   value={walletId}
-                  onChange={(e) => setWalletId(e.target.value)}
-                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                  required
+                  onValueChange={setWalletId}
+                  options={wallets.map((w) => ({ value: w.id.toString(), label: w.name }))}
+                  placeholder={loadingWallets ? 'Loading...' : 'Select wallet'}
                   disabled={loadingWallets}
-                >
-                  <option value="">{loadingWallets ? 'Loading...' : 'Select wallet'}</option>
-                  {wallets.map((wallet) => (
-                    <option key={wallet.id} value={wallet.id}>
-                      {wallet.name}
-                    </option>
-                  ))}
-                </select>
+                  required
+                />
               </div>
 
               <div className="space-y-2">
                 <label htmlFor="category" className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
                   Category
                 </label>
-                <select
+                <CustomSelect
                   id="category"
                   value={categoryId}
-                  onChange={(e) => setCategoryId(e.target.value)}
-                  className="w-full rounded-[16px] border border-[var(--color-divider)] bg-[var(--color-bg)] px-4 py-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)]"
-                  required
+                  onValueChange={setCategoryId}
+                  options={filteredCategories.map((c) => ({ value: c.id.toString(), label: c.name }))}
+                  placeholder={loadingCategories ? 'Loading...' : 'Select category'}
                   disabled={loadingCategories}
-                >
-                  <option value="">{loadingCategories ? 'Loading...' : 'Select category'}</option>
-                  {filteredCategories.map((category) => (
-                    <option key={category.id} value={category.id}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
+                  required
+                />
               </div>
             </div>
           )}
@@ -400,7 +377,7 @@ export default function AddTransactionModal({
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

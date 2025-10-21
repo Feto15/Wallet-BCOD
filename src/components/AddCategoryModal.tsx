@@ -1,6 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 interface AddCategoryModalProps {
   isOpen: boolean;
@@ -13,8 +19,6 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCate
   const [type, setType] = useState<'expense' | 'income'>('expense');
   const [submitting, setSubmitting] = useState(false);
   const [validationError, setValidationError] = useState('');
-
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -65,17 +69,10 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCate
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={handleClose}
-      />
-
-      {/* Modal */}
-      <div className="relative w-full max-w-[390px] rounded-[24px] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-float)]">
-        <header className="mb-6 flex items-center justify-between">
-          <h2 className="text-[20px] font-semibold">Create New Category</h2>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="w-full max-w-[390px] rounded-[24px] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-float)] border-[var(--color-divider)]" showCloseButton={false}>
+        <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+          <DialogTitle className="text-[20px] font-semibold text-[var(--color-text)]">Create New Category</DialogTitle>
           <button
             type="button"
             onClick={handleClose}
@@ -85,7 +82,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCate
           >
             ×
           </button>
-        </header>
+        </DialogHeader>
 
         {validationError && (
           <div className="mb-4 rounded-[16px] border border-[var(--color-negative)] bg-[rgba(239,68,68,0.15)] px-4 py-3 text-[12px] text-[var(--color-negative)]">
@@ -163,7 +160,7 @@ export default function AddCategoryModal({ isOpen, onClose, onSuccess }: AddCate
             </button>
           </div>
         </form>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

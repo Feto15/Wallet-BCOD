@@ -61,11 +61,14 @@ export async function GET(request: NextRequest) {
           .from(transactions)
           .where(eq(transactions.walletId, wallet.id));
 
+        const rawBalance = result[0]?.balance ?? 0;
+        const balanceValue = Number(rawBalance);
+
         return {
           walletId: wallet.id,
           walletName: wallet.name,
           currency: wallet.currency,
-          balance: result[0]?.balance || 0,
+          balance: Number.isNaN(balanceValue) ? 0 : balanceValue,
         };
       })
     );

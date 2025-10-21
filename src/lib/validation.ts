@@ -58,6 +58,10 @@ export const txQuerySchema = z.object({
   date_to: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
 });
 
+export const txIdParamSchema = z.object({
+  id: z.string().transform(Number).pipe(z.number().int().positive('Transaction ID harus valid')),
+});
+
 // Balance query schema
 export const balanceQuerySchema = z.object({
   wallet_id: z.string().transform(Number).pipe(z.number().int().positive()).optional(),

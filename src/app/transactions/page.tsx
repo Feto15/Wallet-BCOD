@@ -26,14 +26,21 @@ export default function TransactionsPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const toast = useToast();
 
-  const fetchTransactions = async () => {
+  const fetchTransactions = async (options: { silent?: boolean } = {}) => {
+    const { silent = false } = options;
     try {
       console.log('Fetching transactions...');
-      setLoading(true);
+      if (!silent) {
+        setLoading(true);
+      }
       const res = await fetch('/api/transactions');
       console.log('Response status:', res.status);
+      if (!res.ok) {
+        throw new Error(`Failed to fetch transactions (${res.status})`);
+      }
       const data = await res.json();
       console.log('Transactions data:', data);
       setTransactions(data);
@@ -42,7 +49,9 @@ export default function TransactionsPage() {
       toast.error('Failed to load transactions');
     } finally {
       console.log('Setting loading to false');
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -52,6 +61,44 @@ export default function TransactionsPage() {
   }, []);
 
   console.log('Render - loading:', loading, 'transactions:', transactions.length);
+
+  const handleDelete = async (tx: Transaction) => {
+    const confirmationMessage =
+      tx.type === 'transfer'
+        ? 'Delete this transfer? Both legs of the transfer will be removed.'
+        : 'Delete this transaction?';
+
+    const confirmed = typeof window === 'undefined' ? false : window.confirm(confirmationMessage);
+    if (!confirmed) {
+      return;
+    }
+
+    setDeletingId(tx.id);
+    try {
+      const res = await fetch(`/api/transactions/${tx.id}`, {
+        method: 'DELETE',
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        const message = data?.error ?? 'Failed to delete transaction';
+        toast.error(message);
+        return;
+      }
+
+      toast.success(
+        tx.type === 'transfer'
+          ? 'Transfer deleted successfully'
+          : 'Transaction deleted successfully'
+      );
+      await fetchTransactions({ silent: true });
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+      toast.error('Failed to delete transaction');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -113,7 +160,16 @@ export default function TransactionsPage() {
                     {tx.categoryName ?? 'No category'}
                   </p>
                 </div>
-                <div className="text-right">
+                <div className="flex flex-col items-end gap-2 text-right">
+                  <button
+                    type="button"
+                    onClick={() => handleDelete(tx)}
+                    disabled={deletingId === tx.id}
+                    className="inline-flex items-center rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1 text-[12px] font-medium text-[var(--color-text-muted)] transition-colors duration-150 hover:border-[var(--color-negative)] hover:text-[var(--color-negative)] disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="Delete transaction"
+                  >
+                    {deletingId === tx.id ? 'Deleting...' : 'Delete'}
+                  </button>
                   <span
                     className={`inline-flex items-center justify-center rounded-[16px] px-3 py-1 text-[12px] font-medium ${
                       tx.type === 'expense'

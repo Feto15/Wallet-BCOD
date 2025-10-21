@@ -19,6 +19,8 @@ interface AddTransactionModalProps {
   onClose: () => void;
   onSuccess: () => void;
   onError: (message: string) => void;
+  defaultType?: 'expense' | 'income' | 'transfer';
+  lockType?: 'expense' | 'income' | 'transfer';
 }
 
 export default function AddTransactionModal({
@@ -26,8 +28,11 @@ export default function AddTransactionModal({
   onClose,
   onSuccess,
   onError,
+  defaultType = 'expense',
+  lockType,
 }: AddTransactionModalProps) {
-  const [transactionType, setTransactionType] = useState<'expense' | 'income' | 'transfer'>('expense');
+  const initialType = lockType ?? defaultType;
+  const [transactionType, setTransactionType] = useState<'expense' | 'income' | 'transfer'>(initialType);
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [submitting, setSubmitting] = useState(false);
@@ -48,6 +53,7 @@ export default function AddTransactionModal({
 
   useEffect(() => {
     if (isOpen) {
+      setTransactionType(initialType);
       fetchWallets();
       fetchCategories();
       // Set default date/time to now in datetime-local format
@@ -60,7 +66,7 @@ export default function AddTransactionModal({
       setOccurredAt(`${year}-${month}-${day}T${hours}:${minutes}`);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpen]);
+  }, [isOpen, initialType]);
 
   const fetchWallets = async () => {
     try {
@@ -167,6 +173,7 @@ export default function AddTransactionModal({
     setFromWalletId('');
     setToWalletId('');
     setValidationError('');
+    setTransactionType(initialType);
   };
 
   const handleClose = () => {
@@ -206,33 +213,35 @@ export default function AddTransactionModal({
             </div>
           )}
 
-          <div className="space-y-2">
-            <span className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
-              Transaction type
-            </span>
-            <div className="grid grid-cols-3 gap-2">
-              {(
-                [
-                  { value: 'expense', label: 'Expense', color: 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]' },
-                  { value: 'income', label: 'Income', color: 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]' },
-                  { value: 'transfer', label: 'Transfer', color: 'bg-[rgba(167,139,250,0.15)] text-[var(--color-accent)]' },
-                ] as const
-              ).map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setTransactionType(option.value)}
-                  className={`rounded-full px-4 py-2 text-[14px] font-medium transition-all duration-200 ease-in-out ${
-                    transactionType === option.value
-                      ? option.color
-                      : 'bg-[#2D2D2D] text-[var(--color-text-muted)] hover:brightness-110'
-                  }`}
-                >
-                  {option.label}
-                </button>
-              ))}
+          {!lockType && (
+            <div className="space-y-2">
+              <span className="text-[12px] font-medium uppercase tracking-[0.2px] text-[var(--color-text-muted)]">
+                Transaction type
+              </span>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  [
+                    { value: 'expense', label: 'Expense', color: 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]' },
+                    { value: 'income', label: 'Income', color: 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]' },
+                    { value: 'transfer', label: 'Transfer', color: 'bg-[rgba(167,139,250,0.15)] text-[var(--color-accent)]' },
+                  ] as const
+                ).map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => setTransactionType(option.value)}
+                    className={`rounded-full px-4 py-2 text-[14px] font-medium transition-all duration-200 ease-in-out ${
+                      transactionType === option.value
+                        ? option.color
+                        : 'bg-[#2D2D2D] text-[var(--color-text-muted)] hover:brightness-110'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {transactionType === 'transfer' ? (
             <div className="space-y-4">

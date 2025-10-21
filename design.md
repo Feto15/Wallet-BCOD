@@ -19,7 +19,7 @@ This document translates the provided design_system JSON into a practical, Tailw
   - Elevation M: `0 2px 12px rgba(0,0,0,0.4)`
   - Elevation Float: `0 8px 24px rgba(0,0,0,0.6)`
 
-Recommended CSS variables (global.css):
+Recommended CSS variables (global.css) — already present in `APP/src/app/globals.css`:
 ```css
 :root {
   /* Colors */
@@ -190,6 +190,32 @@ Usage:
 </svg>
 ```
 
+### 2.6 Bottom Sheet (Action Menu)
+- Surface: `var(--color-surface)` with rounded top `24px`
+- Backdrop: `bg-black/60`
+- Handle: `--color-divider` pill
+- Motion: slide-up `300ms`
+
+Usage (matches Wallets page options):
+```html
+<div class="fixed inset-0 z-50 flex items-end justify-center">
+  <div class="absolute inset-0 bg-black/60" />
+  <div class="relative w-full max-w-[390px] rounded-t-[24px] bg-[var(--color-surface)] pb-6 animate-slide-up">
+    <div class="flex justify-center py-3">
+      <div class="h-1 w-12 rounded-full bg-[var(--color-divider)]" />
+    </div>
+    <div class="px-6 pb-2">
+      <h3 class="text-[18px] font-semibold">Opsi</h3>
+    </div>
+    <div class="border-t border-[var(--color-divider)]">
+      <button class="flex w-full items-center gap-3 px-6 py-4 text-left hover:bg-[rgba(255,255,255,0.05)]">Edit</button>
+      <button class="flex w-full items-center gap-3 px-6 py-4 text-left text-[var(--color-negative)] hover:bg-[rgba(239,68,68,0.1)]">Hapus</button>
+    </div>
+  </div>
+  
+</div>
+```
+
 
 ## 3) Composition & Patterns
 
@@ -279,6 +305,10 @@ Suggested directory conventions:
 - Design tokens and globals: `src/app/globals.css`
 - Reusable UI primitives: `src/components/ui/*`
 - Feature components (e.g., AddTransactionModal): `src/components/*`
+
+ Files:
+ - Bottom navigation: `APP/src/components/BottomNav.tsx`
+ - Wallets page (uses Bottom Sheet): `APP/src/app/wallets/page.tsx`
 
 
 ## 6) Brand Tone

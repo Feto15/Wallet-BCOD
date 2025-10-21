@@ -45,14 +45,19 @@ export async function GET(request: NextRequest) {
       )
       .groupBy(transactions.categoryId, categories.name, categories.type, transactions.type);
 
-    // Calculate totals
-    const totalExpense = results
-      .filter((r) => r.type === 'expense')
-      .reduce((sum, r) => sum + (r.total || 0), 0);
+    const normalizedResults = results.map((r) => ({
+      ...r,
+      total: Number(r.total ?? 0),
+    }));
 
-    const totalIncome = results
+    // Calculate totals
+    const totalExpense = normalizedResults
+      .filter((r) => r.type === 'expense')
+      .reduce((sum, r) => sum + r.total, 0);
+
+    const totalIncome = normalizedResults
       .filter((r) => r.type === 'income')
-      .reduce((sum, r) => sum + (r.total || 0), 0);
+      .reduce((sum, r) => sum + r.total, 0);
 
     return NextResponse.json({
       month: query.month,
@@ -65,12 +70,12 @@ export async function GET(request: NextRequest) {
         totalIncome,
         net: totalIncome - totalExpense,
       },
-      byCategory: results.map((r) => ({
+      byCategory: normalizedResults.map((r) => ({
         categoryId: r.categoryId,
         categoryName: r.categoryName,
         categoryType: r.categoryType,
         type: r.type,
-        total: r.total || 0,
+        total: r.total,
       })),
     });
   } catch (error) {

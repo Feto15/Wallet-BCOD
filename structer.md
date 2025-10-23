@@ -45,9 +45,9 @@ Route API (REST, server-side):
 - `APP/src/app/api/wallets/route.ts` — `GET /api/wallets`, `POST /api/wallets`.
 - `APP/src/app/api/wallets/[id]/summary/route.ts` — `GET /api/wallets/:id/summary` (income, expense, net, uncategorized; exclude transfer).
 - `APP/src/app/api/categories/route.ts` — `GET/POST /api/categories`.
-- `APP/src/app/api/transactions/route.ts` — `GET/POST /api/transactions` (expense/income/transfer).
+- `APP/src/app/api/transactions/route.ts` — `GET/POST /api/transactions` (expense/income/transfer). `GET` mendukung filter `type`, `wallet_id`, `category_id`, `date_from`, `date_to`, `search` (nama wallet/kategori/catatan), dan `sort` (`newest|oldest|highest|lowest`).
 - `APP/src/app/api/transactions/[id]/route.ts` — `DELETE /api/transactions/:id` (hapus 1 transaksi atau 1 grup transfer).
-- `APP/src/app/api/balances/route.ts` — `GET /api/balances` (saldo per wallet).
+- `APP/src/app/api/balances/route.ts` — `GET /api/balances` (saldo per wallet; opsional `wallet_id`).
 - `APP/src/app/api/reports/monthly-summary/route.ts` — `GET /api/reports/monthly-summary`.
 
 Server Actions (hapus/hard delete):
@@ -59,6 +59,7 @@ Komponen & hooks UI:
 - `APP/src/components/Toast.tsx` — Komponen toast notifikasi.
 - `APP/src/components/BottomNav.tsx` — Navigasi bawah (mobile-first).
 - `APP/src/hooks/useToast.ts` — Hook state & util untuk toast.
+ - `APP/src/components/ui/*` — Primitif UI berbasis Radix/Shadcn (dialog, select, dll.).
 
 Library utilitas & validasi:
 - `APP/src/lib/utils.ts` — Helper format IDR, parser input uang, helper umum.
@@ -83,7 +84,8 @@ Environment (tidak dikomit, contoh):
 - API route menjalankan validasi Zod (`src/lib/validation.ts`), kemudian query ke database via Drizzle (`src/db/*`).
 - Format uang disiapkan di UI via helper (`src/lib/utils.ts`), sementara nilai disimpan sebagai integer rupiah di DB (`schema.ts`).
 - Transfer dibuat atomic (group + 2 baris transaksi) di endpoint transaksi.
- - Hapus wallet/kategori memakai Server Actions dengan hard delete sesuai aturan v1.2 (CASCADE/SET NULL).
+- Hapus wallet/kategori memakai Server Actions dengan hard delete sesuai aturan v1.2 (CASCADE/SET NULL).
+ - v1.2: Pembuatan expense/income memperbolehkan `category_id=null` untuk transaksi “Uncategorized”.
 
 ## Navigasi Cepat (file kunci)
 - Rencana Proyek: `PROJECT_PLAN.md`
@@ -105,3 +107,5 @@ Environment (tidak dikomit, contoh):
 - Manajer paket: selalu gunakan `pnpm`.
 - Default sorting di UI & API: `occurred_at desc`.
 - v1.2: Archive dihapus. Gunakan hard delete dengan foreign key: wallets → transactions ON DELETE CASCADE; categories → transactions ON DELETE SET NULL; transfer_groups → transactions ON DELETE CASCADE.
+- Pencarian cepat tersedia di `/transactions` via query `search` (mencari di nama wallet, kategori, dan catatan).
+ - Perhitungan saldo transfer di `/api/balances` membedakan baris keluar/masuk dalam satu `transfer_group` secara deterministik (rekor dengan `id` terkecil diperlakukan sebagai baris keluar).

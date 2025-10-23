@@ -105,6 +105,23 @@ Snippets:
 .page { padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom); }
 ```
 
+### 1.4 Tailwind v4 Inline Theme
+- Project uses Tailwind v4 with `@theme inline` in `APP/src/app/globals.css` to map CSS variables to utility tokens.
+- Keep new tokens consistent with existing variables: `--color-*`, `--shadow-*`.
+
+Example (already present):
+```css
+@theme inline {
+  --color-background: var(--color-bg);
+  --color-foreground: var(--color-text);
+  --color-muted: var(--color-text-muted);
+  --color-accent: var(--color-accent);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-md: var(--shadow-md);
+  --shadow-float: var(--shadow-float);
+}
+```
+
 
 ## 2) Components
 
@@ -215,6 +232,11 @@ Usage (matches Wallets page options):
   
 </div>
 ```
+
+### 2.7 Radix/Shadcn UI Primitives
+- Radix-based primitives live under `src/components/ui/*` (e.g., `dialog.tsx`, `select.tsx`).
+- They are styled with the same CSS variables; keep dark-mode contrast and focus states.
+- Prefer these primitives for modals/overlays and selects for consistency.
 
 
 ## 3) Composition & Patterns

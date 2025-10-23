@@ -20,10 +20,11 @@ export function getAuthSecret(): string {
 export function issueAuthCookie(res: NextResponse, token: string): void {
   const name = getCookieName()
   const maxAge = getMaxAge()
+  const isProduction = process.env.NODE_ENV === 'production'
   res.cookies.set(name, token, {
     httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: isProduction ? 'lax' : 'strict',
+    secure: isProduction,
     path: '/',
     maxAge,
   })
@@ -31,10 +32,11 @@ export function issueAuthCookie(res: NextResponse, token: string): void {
 
 export function clearAuthCookie(res: NextResponse): void {
   const name = getCookieName()
+  const isProduction = process.env.NODE_ENV === 'production'
   res.cookies.set(name, '', {
     httpOnly: true,
-    sameSite: 'strict',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: isProduction ? 'lax' : 'strict',
+    secure: isProduction,
     path: '/',
     maxAge: 0,
   })

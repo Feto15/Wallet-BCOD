@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { transactions, wallets, categories, transferGroups } from '@/db/schema';
 import { txCreateSchema, txQuerySchema } from '@/lib/validation';
-import { eq, and, gte, lte, desc, asc, or, ilike } from 'drizzle-orm';
+import { eq, and, gte, lte, desc, asc, or, ilike, inArray, sql } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -84,7 +84,47 @@ export async function GET(request: NextRequest) {
       .where(conditions.length > 0 ? and(...conditions) : undefined)
       .orderBy(orderByClause);
 
-    return NextResponse.json(results);
+    // Determine transfer direction using minimum transaction ID per transfer group (outgoing inserted first)
+    const transferGroupIds = Array.from(
+      new Set(
+        results
+          .map((tx) => tx.transferGroupId)
+          .filter((id): id is number => typeof id === 'number')
+      )
+    );
+
+    let minIdByTransferGroup = new Map<number, number>();
+    if (transferGroupIds.length > 0) {
+      const transferMeta = await db
+        .select({
+          transferGroupId: transactions.transferGroupId,
+          minId: sql<number>`MIN(${transactions.id})`.as('minId'),
+        })
+        .from(transactions)
+        .where(inArray(transactions.transferGroupId, transferGroupIds))
+        .groupBy(transactions.transferGroupId);
+
+      minIdByTransferGroup = new Map(
+        transferMeta
+          .filter((row) => row.transferGroupId !== null)
+          .map((row) => [row.transferGroupId!, Number(row.minId)])
+      );
+    }
+
+    const enrichedResults = results.map((tx) => {
+      if (!tx.transferGroupId) {
+        return { ...tx, transferDirection: null as const };
+      }
+
+      const minId = minIdByTransferGroup.get(tx.transferGroupId);
+      const direction = minId !== undefined && tx.id === minId ? 'out' : 'in';
+      return {
+        ...tx,
+        transferDirection: direction as 'out' | 'in',
+      };
+    });
+
+    return NextResponse.json(enrichedResults);
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(

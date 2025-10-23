@@ -248,9 +248,13 @@ export default function Dashboard() {
                   <div className="rounded-[20px] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-md)]">
                     <h3 className="text-[16px] font-semibold">By category</h3>
                     <div className="mt-3 space-y-3">
-                      {monthlySummary.byCategory.map((cat) => (
+                      {monthlySummary.byCategory.map((cat, index) => (
                         <div
-                          key={cat.categoryId ?? cat.categoryName}
+                          key={
+                            cat.categoryId !== null && cat.categoryId !== undefined
+                              ? `cat-${cat.categoryId}`
+                              : `uncat-${cat.type}-${index}`
+                          }
                           className="flex items-center justify-between border-b border-[var(--color-divider)] pb-3 last:border-0 last:pb-0"
                         >
                           <div>

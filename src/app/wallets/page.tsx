@@ -19,10 +19,16 @@ interface WalletSummary {
   uncategorized: number;
 }
 
+interface WalletBalance {
+  walletId: number;
+  balance: number;
+}
+
 export default function WalletsPage() {
   const router = useRouter();
   const [wallets, setWallets] = useState<Wallet[]>([]);
   const [walletSummaries, setWalletSummaries] = useState<Record<number, WalletSummary>>({});
+  const [walletBalances, setWalletBalances] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
@@ -33,6 +39,21 @@ export default function WalletsPage() {
       const res = await fetch('/api/wallets');
       const data = await res.json();
       setWallets(data);
+      
+      // Fetch balances for all wallets (includes transfer effects)
+      try {
+        const balancesRes = await fetch('/api/balances');
+        if (balancesRes.ok) {
+          const balancesData: WalletBalance[] = await balancesRes.json();
+          const balanceMap: Record<number, number> = {};
+          for (const b of balancesData) {
+            balanceMap[b.walletId] = b.balance;
+          }
+          setWalletBalances(balanceMap);
+        }
+      } catch (err) {
+        console.error('Failed to fetch balances:', err);
+      }
       
       // Fetch summary for each wallet
       const summaries: Record<number, WalletSummary> = {};
@@ -171,7 +192,7 @@ export default function WalletsPage() {
                 <>
                   <div className="mb-3">
                     <p className="text-[28px] font-bold leading-tight">
-                      {formatIDR(summary.net)}
+                      {formatIDR(walletBalances[wallet.id] ?? 0)}
                     </p>
                   </div>
 

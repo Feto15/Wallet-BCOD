@@ -36,6 +36,7 @@ interface Transaction {
   occurredAt: string;
   createdAt: string;
   transferGroupId: number | null;
+  transferDirection?: 'out' | 'in' | null;
 }
 
 export default function TransactionsPage() {
@@ -341,10 +342,14 @@ export default function TransactionsPage() {
                         ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
                         : tx.type === 'income'
                         ? 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
-                        : 'bg-[rgba(167,139,250,0.15)] text-[var(--color-accent)]'
+                        : tx.transferDirection === 'out'
+                        ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
+                        : 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
                     }`}
                   >
-                    {tx.type}
+                    {tx.type === 'transfer'
+                      ? tx.transferDirection === 'out' ? 'transfer-out' : 'transfer-in'
+                      : tx.type}
                   </span>
                   <p
                     className={`mt-3 text-[16px] font-semibold ${
@@ -352,10 +357,13 @@ export default function TransactionsPage() {
                         ? 'text-[var(--color-negative)]'
                         : tx.type === 'income'
                         ? 'text-[var(--color-positive)]'
-                        : 'text-[var(--color-accent)]'
+                        : tx.transferDirection === 'out'
+                        ? 'text-[var(--color-negative)]'
+                        : 'text-[var(--color-positive)]'
                     }`}
                   >
-                    {tx.type === 'expense' ? '-' : '+'}{formatIDR(tx.amount)}
+                    {(tx.type === 'expense' || (tx.type === 'transfer' && tx.transferDirection === 'out')) ? '-' : '+'}
+                    {formatIDR(tx.amount)}
                   </p>
                 </div>
               </div>

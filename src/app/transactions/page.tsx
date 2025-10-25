@@ -172,12 +172,12 @@ export default function TransactionsPage() {
     return (
       <div className="space-y-4">
         <div className="space-y-2">
-          <div className="h-6 w-40 rounded-full bg-[var(--color-divider)]" />
-          <div className="h-4 w-52 rounded-full bg-[var(--color-divider)]" />
+          <div className="shimmer h-6 w-40 rounded-full" />
+          <div className="shimmer h-4 w-52 rounded-full" />
         </div>
         <div className="space-y-3">
           {[1, 2, 3].map((skeleton) => (
-            <div key={skeleton} className="h-24 rounded-[20px] bg-[rgba(30,30,30,0.6)] shadow-[var(--shadow-md)] animate-pulse" />
+            <div key={skeleton} className="shimmer h-24 rounded-[20px] shadow-[var(--shadow-md)]" />
           ))}
         </div>
       </div>

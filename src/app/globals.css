@@ -176,6 +176,49 @@ body {
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+/* Soft Shimmer (subtle glossy) */
+@keyframes shimmer {
+  0% { background-position: -200% 0 }
+  100% { background-position: 200% 0 }
+}
+.shimmer {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.03) 0%,
+    rgba(255,255,255,0.07) 20%,
+    rgba(255,255,255,0.03) 40%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s linear infinite;
+  background-color: rgba(30,30,30,0.5);
+}
+
+/* Dialog transitions (softer) */
+@keyframes dialogOverlayIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes dialogOverlayOut { from { opacity: 1 } to { opacity: 0 } }
+@keyframes dialogContentIn {
+  0% { opacity: 0; transform: translateY(4px) scale(0.995) }
+  100% { opacity: 1; transform: translateY(0) scale(1) }
+}
+@keyframes dialogContentOut {
+  0% { opacity: 1; transform: translateY(0) scale(1) }
+  100% { opacity: 0; transform: translateY(4px) scale(0.995) }
+}
+
+/* Radix Dialog overlay/content state-driven animations */
+[data-state="open"][data-slot="dialog-overlay"] { animation: dialogOverlayIn 140ms ease-out }
+[data-state="closed"][data-slot="dialog-overlay"] { animation: dialogOverlayOut 120ms ease-in }
+
+[data-radix-dialog-content][data-state="open"] { animation: dialogContentIn 140ms cubic-bezier(.22,.61,.36,1) both }
+[data-radix-dialog-content][data-state="closed"] { animation: dialogContentOut 120ms ease-in both }
+
+/* A11y: reduce motion */
+@media (prefers-reduced-motion: reduce) {
+  .shimmer, [data-radix-dialog-content], [data-slot="dialog-overlay"] {
+    animation: none !important;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

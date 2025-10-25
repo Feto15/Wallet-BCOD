@@ -31,7 +31,7 @@ Dokumen pendukung implementasi/QC:
 
 Aset publik & stylesheet global:
 - `APP/public/*.svg` — Ikon publik (next, vercel, globe, file, window).
-- `APP/src/app/globals.css` — Gaya global Tailwind/utility.
+- `APP/src/app/globals.css` — Gaya global Tailwind/utility. Skeleton loading menggunakan kelas `.shimmer` (soft shimmer) agar placeholder tampak hidup dan konsisten.
 - `APP/src/app/favicon.ico` — Favicon aplikasi.
 
 Kode aplikasi (Next.js App Router):

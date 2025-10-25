@@ -129,10 +129,10 @@ export default function WalletsPage() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="h-6 w-32 rounded-full bg-[var(--color-divider)]" />
+        <div className="shimmer h-6 w-32 rounded-full" />
         <div className="space-y-3">
           {[1, 2].map((s) => (
-            <div key={s} className="h-20 rounded-[20px] bg-[rgba(30,30,30,0.6)] shadow-[var(--shadow-md)] animate-pulse" />
+            <div key={s} className="shimmer h-20 rounded-[20px] shadow-[var(--shadow-md)]" />
           ))}
         </div>
       </div>

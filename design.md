@@ -207,29 +207,25 @@ Usage:
 </svg>
 ```
 
-### 2.6 Bottom Sheet (Action Menu)
-- Surface: `var(--color-surface)` with rounded top `24px`
-- Backdrop: `bg-black/60`
-- Handle: `--color-divider` pill
-- Motion: slide-up `300ms`
+### 2.6 Options Modal (Dialog)
+- Pola opsi per-item (Edit / Hapus) menggunakan Dialog (Radix) agar konsisten dan aksesibel.
+- Surface: `var(--color-surface)`; Radius: `24px`; Shadow: `var(--shadow-float)`; Padding: `24px`
+- Backdrop: `rgba(13,13,13,0.85)`; Transisi lembut (lihat bagian Motion)
 
-Usage (matches Wallets page options):
+Usage (sejalan dengan WalletOptionsModal/TransactionOptionsModal):
 ```html
-<div class="fixed inset-0 z-50 flex items-end justify-center">
-  <div class="absolute inset-0 bg-black/60" />
-  <div class="relative w-full max-w-[390px] rounded-t-[24px] bg-[var(--color-surface)] pb-6 animate-slide-up">
-    <div class="flex justify-center py-3">
-      <div class="h-1 w-12 rounded-full bg-[var(--color-divider)]" />
-    </div>
-    <div class="px-6 pb-2">
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+  <div class="absolute inset-0 bg-[rgba(13,13,13,0.85)]" />
+  <div class="relative z-10 w-full max-w-[390px] rounded-[24px] bg-[var(--color-surface)] p-6 shadow-[var(--shadow-float)]">
+    <header class="flex items-center justify-between pb-4">
       <h3 class="text-[18px] font-semibold">Opsi</h3>
-    </div>
-    <div class="border-t border-[var(--color-divider)]">
-      <button class="flex w-full items-center gap-3 px-6 py-4 text-left hover:bg-[rgba(255,255,255,0.05)]">Edit</button>
-      <button class="flex w-full items-center gap-3 px-6 py-4 text-left text-[var(--color-negative)] hover:bg-[rgba(239,68,68,0.1)]">Hapus</button>
+      <button class="text-[24px] text-[var(--color-text-muted)]" aria-label="Close">×</button>
+    </header>
+    <div class="space-y-2">
+      <button class="flex w-full items-center gap-3 rounded-[16px] px-4 py-3 text-left hover:bg-[var(--color-divider)]">Edit</button>
+      <button class="flex w-full items-center gap-3 rounded-[16px] px-4 py-3 text-left text-[var(--color-negative)] hover:bg-[rgba(239,68,68,0.1)]">Hapus</button>
     </div>
   </div>
-  
 </div>
 ```
 
@@ -237,6 +233,47 @@ Usage (matches Wallets page options):
 - Radix-based primitives live under `src/components/ui/*` (e.g., `dialog.tsx`, `select.tsx`).
 - They are styled with the same CSS variables; keep dark-mode contrast and focus states.
 - Prefer these primitives for modals/overlays and selects for consistency.
+
+### 2.8 Kebab Button Pattern
+- Letakkan tombol kebab `⋮` di kanan atas kartu item.
+- A11y: `aria-label="... options"`;
+- Size: `text-[20px]`; Spacing: `p-1`; Color: muted → hover text normal.
+
+Usage:
+```html
+<button
+  class="text-[var(--color-text-muted)] hover:text-[var(--color-text)] p-1 text-[20px] leading-none"
+  aria-label="Wallet options"
+>
+  ⋮
+</button>
+```
+
+## 3) Motion & Loading
+
+### 3.1 Soft Shimmer (Skeleton)
+- Kelas: `.shimmer` (didefinisikan di `globals.css`).
+- Gunakan untuk placeholder kartu saat loading agar terasa hidup, namun tetap subtle.
+
+Usage:
+```html
+<div class="shimmer h-24 rounded-[20px] shadow-[var(--shadow-md)]"></div>
+```
+
+### 3.2 Dialog Transitions (Lembut)
+- Transisi dikendalikan oleh atribut Radix `data-state="open|closed"` pada overlay dan content.
+- Efek: fade + micro-translate; durasi ~120–160ms.
+- Reduced-motion: nonaktifkan animasi untuk pengguna yang memilih preferensi ini.
+
+Catatan Implementasi:
+```css
+/* contoh ringkas, lihat globals.css untuk versi lengkap */
+[data-state="open"][data-slot="dialog-overlay"] { animation: dialogOverlayIn 140ms ease-out }
+[data-state="closed"][data-slot="dialog-overlay"] { animation: dialogOverlayOut 120ms ease-in }
+[data-radix-dialog-content][data-state="open"] { animation: dialogContentIn 140ms cubic-bezier(.22,.61,.36,1) both }
+[data-radix-dialog-content][data-state="closed"] { animation: dialogContentOut 120ms ease-in both }
+@media (prefers-reduced-motion: reduce) { .shimmer, [data-slot="dialog-overlay"], [data-radix-dialog-content] { animation: none !important } }
+```
 
 
 ## 3) Composition & Patterns

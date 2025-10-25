@@ -171,14 +171,14 @@ export default function Dashboard() {
       {loading ? (
         <div className="space-y-6">
           <div className="space-y-3 text-center">
-            <div className="mx-auto h-6 w-32 rounded-full bg-[var(--color-divider)]" />
-            <div className="mx-auto h-10 w-52 rounded-full bg-[var(--color-divider)]" />
+            <div className="shimmer mx-auto h-6 w-32 rounded-full" />
+            <div className="shimmer mx-auto h-10 w-52 rounded-full" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             {[1, 2, 3, 4].map((key) => (
               <div
                 key={key}
-                className="h-28 rounded-[20px] bg-[rgba(30,30,30,0.6)] shadow-[var(--shadow-md)] animate-pulse"
+                className="shimmer h-28 rounded-[20px] shadow-[var(--shadow-md)]"
               />
             ))}
           </div>

@@ -239,13 +239,13 @@ export default function Dashboard() {
 
               <div className="grid gap-3">
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="rounded-[20px] bg-[rgba(34,197,94,0.15)] p-4 min-h-[90px] flex flex-col justify-between">
+                  <div className="rounded-[20px] bg-[rgba(34,197,94,0.15)] p-4 min-h-[90px] flex flex-col justify-between fade-in-up">
                     <p className="text-[12px] text-[var(--color-text-muted)] mb-1">Income</p>
                     <p className="text-[16px] font-bold text-[var(--color-text)] leading-tight break-words">
                       {formatIDR(monthlySummary.summary.totalIncome)}
                     </p>
                   </div>
-                  <div className="rounded-[20px] bg-[rgba(239,68,68,0.15)] p-4 min-h-[90px] flex flex-col justify-between">
+                  <div className="rounded-[20px] bg-[rgba(239,68,68,0.15)] p-4 min-h-[90px] flex flex-col justify-between fade-in-up" style={{ animationDelay: '60ms' }}>
                     <p className="text-[12px] text-[var(--color-text-muted)] mb-1">Expense</p>
                     <p className="text-[16px] font-bold text-[var(--color-text)] leading-tight break-words">
                       {formatIDR(monthlySummary.summary.totalExpense)}
@@ -254,7 +254,7 @@ export default function Dashboard() {
                 </div>
 
                 {monthlySummary.byCategory.length > 0 ? (
-                  <div className="rounded-[20px] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-md)]">
+                  <div className="rounded-[20px] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-md)] fade-in-up" style={{ animationDelay: '120ms' }}>
                     <h3 className="text-[16px] font-semibold">By category</h3>
                     <div className="mt-3 space-y-3">
                       {monthlySummary.byCategory.map((cat, index) => (

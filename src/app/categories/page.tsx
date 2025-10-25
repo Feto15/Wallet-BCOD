@@ -19,6 +19,7 @@ export default function CategoriesPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [showSkel, setShowSkel] = useState(true);
 
   const fetchCategories = async () => {
     try {
@@ -27,6 +28,14 @@ export default function CategoriesPage() {
       const res = await fetch('/api/categories');
       const data = await res.json();
       setCategories(data);
+
+      // Calculate total animation time and hide skeleton after
+      const STAGGER = 50;
+      const DURATION = 240;
+      const count = Math.min(data.length, 8);
+      const total = (count - 1) * STAGGER + DURATION;
+      setShowSkel(true);
+      setTimeout(() => setShowSkel(false), total);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
     } finally {
@@ -107,11 +116,19 @@ export default function CategoriesPage() {
       <section className="space-y-3">
         <h2 className="text-[16px] font-semibold">Expense categories</h2>
         <div className="space-y-3">
-          {expenseCategories.map((category) => (
-            <div
-              key={category.id}
-              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
-            >
+          {expenseCategories.map((category, i) => {
+            const STAGGER = 50;
+            return (
+            <div key={category.id} className="relative rounded-[20px] overflow-hidden shadow-[var(--shadow-md)]">
+              {/* Skeleton overlay (di bawah, tidak mengganggu klik) */}
+              {showSkel && (
+                <div className="absolute inset-0 z-0 shimmer pointer-events-none" />
+              )}
+              {/* Konten final (bukan absolute), dengan fade-in dan delay */}
+              <div
+                className="relative z-[1] bg-[var(--color-card)] p-4 fade-in-up"
+                style={{ animationDelay: `${i * STAGGER}ms` }}
+              >
               <div className="flex items-center justify-between">
                 <p className="text-[16px] font-semibold">{category.name}</p>
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]">
@@ -141,8 +158,10 @@ export default function CategoriesPage() {
                   Delete category
                 </button>
               )}
+              </div>
             </div>
-          ))}
+            );
+          })}
 
           {expenseCategories.length === 0 && (
             <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">
@@ -155,11 +174,20 @@ export default function CategoriesPage() {
       <section className="space-y-3">
         <h2 className="text-[16px] font-semibold">Income categories</h2>
         <div className="space-y-3">
-          {incomeCategories.map((category) => (
-            <div
-              key={category.id}
-              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
-            >
+          {incomeCategories.map((category, i) => {
+            const STAGGER = 50;
+            const offset = expenseCategories.length; // continue animation from expense section
+            return (
+            <div key={category.id} className="relative rounded-[20px] overflow-hidden shadow-[var(--shadow-md)]">
+              {/* Skeleton overlay (di bawah, tidak mengganggu klik) */}
+              {showSkel && (
+                <div className="absolute inset-0 z-0 shimmer pointer-events-none" />
+              )}
+              {/* Konten final (bukan absolute), dengan fade-in dan delay */}
+              <div
+                className="relative z-[1] bg-[var(--color-card)] p-4 fade-in-up"
+                style={{ animationDelay: `${(i + offset) * STAGGER}ms` }}
+              >
               <div className="flex items-center justify-between">
                 <p className="text-[16px] font-semibold">{category.name}</p>
                 <span className="inline-flex items-center rounded-full px-3 py-1 text-[12px] font-medium bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]">
@@ -189,8 +217,10 @@ export default function CategoriesPage() {
                   Delete category
                 </button>
               )}
+              </div>
             </div>
-          ))}
+            );
+          })}
 
           {incomeCategories.length === 0 && (
             <div className="rounded-[20px] bg-[var(--color-card)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">

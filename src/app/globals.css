@@ -212,9 +212,29 @@ body {
 [data-radix-dialog-content][data-state="open"] { animation: dialogContentIn 140ms cubic-bezier(.22,.61,.36,1) both }
 [data-radix-dialog-content][data-state="closed"] { animation: dialogContentOut 120ms ease-in both }
 
+/* Fade-in-up entry animation */
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(6px) }
+  to { opacity: 1; transform: translateY(0) }
+}
+.fade-in-up { 
+  animation: fade-in-up 240ms ease-out both;
+  will-change: opacity, transform;
+  transform: translateZ(0);
+}
+
+/* Optional: micro-move for skeleton without affecting opacity */
+@keyframes skel-rise {
+  from { transform: translateY(2px) }
+  to { transform: translateY(0) }
+}
+.skel-rise {
+  animation: skel-rise 180ms ease-out both;
+}
+
 /* A11y: reduce motion */
 @media (prefers-reduced-motion: reduce) {
-  .shimmer, [data-radix-dialog-content], [data-slot="dialog-overlay"] {
+  .shimmer, .fade-in-up, .skel-rise, [data-radix-dialog-content], [data-slot="dialog-overlay"] {
     animation: none !important;
   }
 }

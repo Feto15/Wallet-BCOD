@@ -37,6 +37,7 @@ export default function WalletsPage() {
   const [editWallet, setEditWallet] = useState<Wallet | null>(null);
   const [deleteWallet, setDeleteWallet] = useState<Wallet | null>(null);
   const [optionsWallet, setOptionsWallet] = useState<Wallet | null>(null);
+  const [showSkel, setShowSkel] = useState(true);
 
   const fetchWallets = async () => {
     try {
@@ -77,6 +78,14 @@ export default function WalletsPage() {
       } catch (err) {
         console.error('Failed to fetch balances or summaries:', err);
       }
+
+      // Calculate total animation time and hide skeleton after
+      const STAGGER = 60; // ms
+      const DURATION = 240; // ms
+      const count = Math.min(data.length, 6);
+      const total = (count - 1) * STAGGER + DURATION;
+      setShowSkel(true);
+      setTimeout(() => setShowSkel(false), total);
     } catch (error) {
       console.error('Failed to fetch wallets:', error);
     } finally {
@@ -134,7 +143,10 @@ export default function WalletsPage() {
         <div className="shimmer h-6 w-32 rounded-full" />
         <div className="space-y-3">
           {[1, 2].map((s) => (
-            <div key={s} className="shimmer h-20 rounded-[20px] shadow-[var(--shadow-md)]" />
+            <div 
+              key={s} 
+              className="shimmer h-20 rounded-[20px] shadow-[var(--shadow-md)]" 
+            />
           ))}
         </div>
       </div>
@@ -194,13 +206,20 @@ export default function WalletsPage() {
         </div>
 
       <div className="space-y-3">
-        {wallets.map((wallet) => {
+        {wallets.map((wallet, i) => {
           const summary = walletSummaries[wallet.id];
+          const STAGGER = 60;
           return (
-            <div
-              key={wallet.id}
-              className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
-            >
+            <div key={wallet.id} className="relative rounded-[20px] overflow-hidden shadow-[var(--shadow-md)]">
+              {/* Skeleton overlay (di bawah, tidak mengganggu klik) */}
+              {showSkel && (
+                <div className="absolute inset-0 z-0 shimmer pointer-events-none" />
+              )}
+              {/* Konten final (bukan absolute), dengan fade-in dan delay */}
+              <div
+                className="relative z-[1] bg-[var(--color-card)] p-4 fade-in-up"
+                style={{ animationDelay: `${i * STAGGER}ms` }}
+              >
               {/* Header: Icon, Name & Buttons */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2.5">
@@ -259,6 +278,7 @@ export default function WalletsPage() {
                   </div>
                 </>
               )}
+              </div>
             </div>
           );
         })}

@@ -105,7 +105,7 @@ export default function BottomNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="pointer-events-none sticky bottom-4 flex w-full justify-center px-4">
+    <nav className="pointer-events-none sticky bottom-4 z-50 flex w-full justify-center px-4">
       <NavigationMenu.Root className="pointer-events-auto w-full max-w-[390px]">
         <NavigationMenu.List className="flex items-center justify-between rounded-full border border-[rgba(255,255,255,0.1)] bg-[rgba(255,255,255,0.05)] px-2 py-2 shadow-[0_8px_32px_rgba(0,0,0,0.3)] backdrop-blur-2xl">
           {NAV_ITEMS.map((item) => {

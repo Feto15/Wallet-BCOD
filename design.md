@@ -254,6 +254,7 @@ Usage:
 ### 3.1 Soft Shimmer (Skeleton)
 - Kelas: `.shimmer` (didefinisikan di `globals.css`).
 - Gunakan untuk placeholder kartu saat loading agar terasa hidup, namun tetap subtle.
+ - Jangan kombinasikan dengan `.fade-in-up`; fade-in khusus untuk konten final agar skeleton tidak menghilang saat menunggu delay.
 
 Usage:
 ```html
@@ -272,7 +273,23 @@ Catatan Implementasi:
 [data-state="closed"][data-slot="dialog-overlay"] { animation: dialogOverlayOut 120ms ease-in }
 [data-radix-dialog-content][data-state="open"] { animation: dialogContentIn 140ms cubic-bezier(.22,.61,.36,1) both }
 [data-radix-dialog-content][data-state="closed"] { animation: dialogContentOut 120ms ease-in both }
-@media (prefers-reduced-motion: reduce) { .shimmer, [data-slot="dialog-overlay"], [data-radix-dialog-content] { animation: none !important } }
+@media (prefers-reduced-motion: reduce) { .shimmer, [data-slot="dialog-overlay"], [data-radix-dialog-content], .fade-in-up { animation: none !important } }
+```
+
+### 3.3 Wrapper & Layering (Shimmer + Stagger)
+- Pola untuk menjaga shimmer terlihat sampai konten muncul, tanpa teks “keluar” dari kartu:
+  - Wrapper: `relative rounded-[20px] overflow-hidden shadow-[var(--shadow-md)]`
+  - Skeleton (overlay bawah): `absolute inset-0 z-0 shimmer pointer-events-none`
+  - Konten final: `relative z-10 ... fade-in-up` + `style={{ animationDelay: '...ms' }}`
+
+Contoh pola kartu:
+```html
+<div class="relative rounded-[20px] overflow-hidden shadow-[var(--shadow-md)]">
+  <div class="absolute inset-0 shimmer pointer-events-none"></div>
+  <div class="relative z-10 bg-[var(--color-card)] p-4 fade-in-up" style="animation-delay: 120ms">
+    <!-- isi kartu -->
+  </div>
+</div>
 ```
 
 

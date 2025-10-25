@@ -50,6 +50,7 @@ export default function TransactionsPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [optionsTx, setOptionsTx] = useState<Transaction | null>(null);
   const [editingTx, setEditingTx] = useState<Transaction | null>(null);
+  const [showSkel, setShowSkel] = useState(true);
   const toast = useToast();
 
   // Filter states
@@ -121,6 +122,14 @@ export default function TransactionsPage() {
       const data = await res.json();
       console.log('Transactions data:', data);
       setTransactions(data);
+
+      // Calculate total animation time and hide skeleton after
+      const STAGGER = 50;
+      const DURATION = 240;
+      const count = Math.min(data.length, 8);
+      const total = (count - 1) * STAGGER + DURATION;
+      setShowSkel(true);
+      setTimeout(() => setShowSkel(false), total);
     } catch (error) {
       // Ignore abort errors
       if (error instanceof Error && error.name === 'AbortError') {
@@ -207,7 +216,10 @@ export default function TransactionsPage() {
         </div>
         <div className="space-y-3">
           {[1, 2, 3].map((skeleton) => (
-            <div key={skeleton} className="shimmer h-24 rounded-[20px] shadow-[var(--shadow-md)]" />
+            <div 
+              key={skeleton} 
+              className="shimmer h-24 rounded-[20px] shadow-[var(--shadow-md)]" 
+            />
           ))}
         </div>
       </div>
@@ -371,11 +383,19 @@ export default function TransactionsPage() {
         </div>
 
         <div className="space-y-3">
-          {transactions.map((tx) => (
-            <div
-              key={tx.id}
-              className="rounded-[20px] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-md)]"
-            >
+          {transactions.map((tx, i) => {
+            const STAGGER = 50;
+            return (
+              <div key={tx.id} className="relative rounded-[20px] overflow-hidden shadow-[var(--shadow-md)]">
+                {/* Skeleton overlay (di bawah, tidak mengganggu klik) */}
+                {showSkel && (
+                  <div className="absolute inset-0 z-0 shimmer pointer-events-none" />
+                )}
+                {/* Konten final (bukan absolute), dengan fade-in dan delay */}
+                <div
+                  className="relative z-[1] bg-[var(--color-surface)] p-4 fade-in-up"
+                  style={{ animationDelay: `${i * STAGGER}ms` }}
+                >
               <div className="flex items-start justify-between">
                 <div className="flex-1 space-y-1">
                   <p className="text-[12px] text-[var(--color-text-muted)]">
@@ -433,8 +453,10 @@ export default function TransactionsPage() {
                   {tx.note}
                 </p>
               )}
-            </div>
-          ))}
+                </div>
+              </div>
+            );
+          })}
 
           {transactions.length === 0 && (
             <div className="rounded-[20px] bg-[var(--color-surface)] p-6 text-center text-[var(--color-text-muted)] shadow-[var(--shadow-md)]">

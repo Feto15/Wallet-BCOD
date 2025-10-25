@@ -31,7 +31,7 @@ Dokumen pendukung implementasi/QC:
 
 Aset publik & stylesheet global:
 - `APP/public/*.svg` — Ikon publik (next, vercel, globe, file, window).
-- `APP/src/app/globals.css` — Gaya global Tailwind/utility. Skeleton loading menggunakan kelas `.shimmer` (soft shimmer) agar placeholder tampak hidup dan konsisten.
+- `APP/src/app/globals.css` — Gaya global Tailwind/utility. Skeleton loading gunakan `.shimmer` (soft shimmer); animasi masuk konten gunakan `.fade-in-up` (stagger via `animationDelay`). Ikuti pola wrapper: `relative rounded-[20px] overflow-hidden` + skeleton overlay `absolute inset-0 shimmer pointer-events-none z-0` dan konten `relative z-10 ...` agar teks tidak keluar kartu.
 - `APP/src/app/favicon.ico` — Favicon aplikasi.
 
 Kode aplikasi (Next.js App Router):

@@ -4,6 +4,9 @@ import { useEffect, useState } from 'react';
 import { deleteWalletAction } from '@/actions/wallets';
 import { useRouter } from 'next/navigation';
 import AddWalletModal from '@/components/AddWalletModal';
+import EditWalletModal from '@/components/EditWalletModal';
+import DeleteWalletModal from '@/components/DeleteWalletModal';
+import WalletOptionsModal from '@/components/WalletOptionsModal';
 
 interface Wallet {
   id: number;
@@ -31,7 +34,9 @@ export default function WalletsPage() {
   const [walletBalances, setWalletBalances] = useState<Record<number, number>>({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
+  const [editWallet, setEditWallet] = useState<Wallet | null>(null);
+  const [deleteWallet, setDeleteWallet] = useState<Wallet | null>(null);
+  const [optionsWallet, setOptionsWallet] = useState<Wallet | null>(null);
 
   const fetchWallets = async () => {
     try {
@@ -83,6 +88,12 @@ export default function WalletsPage() {
 
   const handleModalSuccess = async () => {
     await fetchWallets();
+    router.refresh();
+  };
+
+  const handleEditSuccess = async () => {
+    await fetchWallets();
+    router.refresh();
   };
 
   const handleDelete = async (id: number, name: string) => {
@@ -95,7 +106,6 @@ export default function WalletsPage() {
       if (result.success) {
         // Show success message
         alert(result.message || 'Wallet deleted successfully');
-        setDeleteConfirm(null);
         // Refresh the list
         await fetchWallets();
         router.refresh();
@@ -137,6 +147,34 @@ export default function WalletsPage() {
         onSuccess={handleModalSuccess}
       />
       
+      {editWallet && (
+        <EditWalletModal
+          isOpen={!!editWallet}
+          onClose={() => setEditWallet(null)}
+          wallet={editWallet}
+          onSuccess={handleEditSuccess}
+        />
+      )}
+
+      {deleteWallet && (
+        <DeleteWalletModal
+          isOpen={!!deleteWallet}
+          onClose={() => setDeleteWallet(null)}
+          wallet={deleteWallet}
+          onDelete={handleDelete}
+        />
+      )}
+
+      {optionsWallet && (
+        <WalletOptionsModal
+          isOpen={!!optionsWallet}
+          onClose={() => setOptionsWallet(null)}
+          wallet={optionsWallet}
+          onSelectEdit={(w) => setEditWallet(w)}
+          onSelectDelete={(w) => setDeleteWallet(w)}
+        />
+      )}
+      
       <div className="space-y-6 pb-16">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -161,7 +199,7 @@ export default function WalletsPage() {
               key={wallet.id}
               className="rounded-[20px] bg-[var(--color-card)] p-4 shadow-[var(--shadow-md)]"
             >
-              {/* Header: Icon, Name & Menu */}
+              {/* Header: Icon, Name & Buttons */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2.5">
                   {/* Wallet Icon */}
@@ -178,10 +216,11 @@ export default function WalletsPage() {
                   </div>
                 </div>
 
-                {/* Three-dot Menu Button (Kebab Menu) */}
+                {/* Kebab Menu Button */}
                 <button
-                  onClick={() => setDeleteConfirm(deleteConfirm === wallet.id ? null : wallet.id)}
-                  className="text-[20px] text-[var(--color-text-muted)] hover:text-[var(--color-text)] -mt-1"
+                  onClick={() => setOptionsWallet(wallet)}
+                  className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] p-1 text-[20px] leading-none"
+                  aria-label="Wallet options"
                 >
                   ⋮
                 </button>
@@ -217,58 +256,6 @@ export default function WalletsPage() {
                     </div>
                   </div>
                 </>
-              )}
-
-              {/* Bottom Sheet Options */}
-              {deleteConfirm === wallet.id && (
-                <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={() => setDeleteConfirm(null)}>
-                  {/* Backdrop */}
-                  <div className="absolute inset-0 bg-black/60" />
-                  
-                  {/* Bottom Sheet */}
-                  <div 
-                    className="relative w-full max-w-[390px] rounded-t-[24px] bg-[var(--color-surface)] pb-6"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {/* Handle Bar */}
-                    <div className="flex justify-center py-3">
-                      <div className="h-1 w-12 rounded-full bg-[var(--color-divider)]" />
-                    </div>
-
-                    {/* Title */}
-                    <div className="px-6 pb-2">
-                      <h3 className="text-[18px] font-semibold">Opsi</h3>
-                    </div>
-
-                    {/* Options */}
-                    <div className="border-t border-[var(--color-divider)]">
-                      {/* Edit Option */}
-                      <button
-                        className="flex w-full items-center gap-3 px-6 py-4 text-left hover:bg-[rgba(255,255,255,0.05)]"
-                        onClick={() => {
-                          alert('Edit feature coming soon!');
-                          setDeleteConfirm(null);
-                        }}
-                      >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                        </svg>
-                        <span className="text-[16px]">Edit Dompet</span>
-                      </button>
-
-                      {/* Delete Option */}
-                      <button
-                        className="flex w-full items-center gap-3 px-6 py-4 text-left text-[var(--color-negative)] hover:bg-[rgba(239,68,68,0.1)]"
-                        onClick={() => handleDelete(wallet.id, wallet.name)}
-                      >
-                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                        <span className="text-[16px]">Hapus Dompet</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
               )}
             </div>
           );

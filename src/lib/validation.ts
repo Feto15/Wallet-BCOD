@@ -5,6 +5,10 @@ export const walletCreateSchema = z.object({
   name: z.string().min(1, 'Nama wallet harus diisi'),
 });
 
+export const walletUpdateSchema = z.object({
+  name: z.string().min(1, 'Nama wallet harus diisi'),
+});
+
 export const walletQuerySchema = z.object({
   include_archived: z.enum(['true', 'false']).optional().default('false'),
 });
@@ -63,6 +67,26 @@ export const txQuerySchema = z.object({
 export const txIdParamSchema = z.object({
   id: z.string().transform(Number).pipe(z.number().int().positive('Transaction ID harus valid')),
 });
+
+// Transaction update schemas
+export const txUpdateExpenseIncomeSchema = z.object({
+  wallet_id: z.number().int().positive('Wallet ID harus valid'),
+  category_id: z.number().int().positive('Kategori ID harus valid').nullable(),
+  amount: z.number().int().positive('Jumlah harus lebih dari 0'),
+  occurred_at: z.string().regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, 'Format tanggal harus YYYY-MM-DD HH:mm'),
+  note: z.string().optional(),
+});
+
+export const txUpdateTransferSchema = z.object({
+  from_wallet_id: z.number().int().positive('From wallet ID harus valid'),
+  to_wallet_id: z.number().int().positive('To wallet ID harus valid'),
+  amount: z.number().int().positive('Jumlah harus lebih dari 0'),
+  occurred_at: z.string().regex(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/, 'Format tanggal harus YYYY-MM-DD HH:mm'),
+  note: z.string().optional(),
+}).refine(
+  (data) => data.from_wallet_id !== data.to_wallet_id,
+  { message: 'Wallet asal dan tujuan tidak boleh sama' }
+);
 
 // Balance query schema
 export const balanceQuerySchema = z.object({

@@ -5,6 +5,8 @@ import dayjs from 'dayjs';
 import { formatIDR } from '@/lib/utils';
 import { ToastContainer } from '@/components/Toast';
 import AddTransactionModal from '@/components/AddTransactionModal';
+import EditTransactionModal from '@/components/EditTransactionModal';
+import TransactionOptionsModal from '@/components/TransactionOptionsModal';
 import { useToast } from '@/hooks/useToast';
 
 interface Wallet {
@@ -46,6 +48,8 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [optionsTx, setOptionsTx] = useState<Transaction | null>(null);
+  const [editingTx, setEditingTx] = useState<Transaction | null>(null);
   const toast = useToast();
 
   // Filter states
@@ -192,6 +196,32 @@ export default function TransactionsPage() {
         }}
         onError={(message) => toast.error(message)}
       />
+
+      {optionsTx && (
+        <TransactionOptionsModal
+          isOpen={!!optionsTx}
+          onClose={() => setOptionsTx(null)}
+          transaction={optionsTx}
+          onSelectEdit={(tx) => setEditingTx(tx)}
+          onSelectDelete={(tx) => handleDelete(tx)}
+        />
+      )}
+
+      {editingTx && (
+        <EditTransactionModal
+          isOpen={!!editingTx}
+          onClose={() => setEditingTx(null)}
+          transaction={editingTx}
+          wallets={wallets}
+          categories={categories}
+          onSuccess={() => {
+            setEditingTx(null);
+            toast.success('Transaction updated successfully!');
+            fetchTransactions();
+          }}
+          onError={(message) => toast.error(message)}
+        />
+      )}
       <div className="space-y-4 pb-16">
         <div className="flex items-center justify-between">
           <div className="space-y-1">
@@ -317,42 +347,43 @@ export default function TransactionsPage() {
               className="rounded-[20px] bg-[var(--color-surface)] p-4 shadow-[var(--shadow-md)]"
             >
               <div className="flex items-start justify-between">
-                <div className="space-y-1">
+                <div className="flex-1 space-y-1">
                   <p className="text-[12px] text-[var(--color-text-muted)]">
                     {dayjs(tx.occurredAt).format('DD MMM YYYY, HH:mm')}
                   </p>
                   <p className="text-[16px] font-semibold">{tx.walletName}</p>
-                  <p className="text-[12px] text-[var(--color-text-muted)]">
-                    {tx.categoryName ?? 'No category'}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[12px] text-[var(--color-text-muted)]">
+                      {tx.categoryName ?? 'No category'}
+                    </p>
+                    <span
+                      className={`inline-flex items-center justify-center rounded-[16px] px-3 py-1 text-[12px] font-medium ${
+                        tx.type === 'expense'
+                          ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
+                          : tx.type === 'income'
+                          ? 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
+                          : tx.transferDirection === 'out'
+                          ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
+                          : 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
+                      }`}
+                    >
+                      {tx.type === 'transfer'
+                        ? tx.transferDirection === 'out' ? 'transfer-out' : 'transfer-in'
+                        : tx.type}
+                    </span>
+                  </div>
                 </div>
                 <div className="flex flex-col items-end gap-2 text-right">
                   <button
                     type="button"
-                    onClick={() => handleDelete(tx)}
-                    disabled={deletingId === tx.id}
-                    className="inline-flex items-center rounded-full border border-[rgba(255,255,255,0.08)] px-3 py-1 text-[12px] font-medium text-[var(--color-text-muted)] transition-colors duration-150 hover:border-[var(--color-negative)] hover:text-[var(--color-negative)] disabled:cursor-not-allowed disabled:opacity-60"
-                    aria-label="Delete transaction"
+                    onClick={() => setOptionsTx(tx)}
+                    className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] p-1 text-[20px] leading-none"
+                    aria-label="Transaction options"
                   >
-                    {deletingId === tx.id ? 'Deleting...' : 'Delete'}
+                    ⋮
                   </button>
-                  <span
-                    className={`inline-flex items-center justify-center rounded-[16px] px-3 py-1 text-[12px] font-medium ${
-                      tx.type === 'expense'
-                        ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
-                        : tx.type === 'income'
-                        ? 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
-                        : tx.transferDirection === 'out'
-                        ? 'bg-[rgba(239,68,68,0.15)] text-[var(--color-negative)]'
-                        : 'bg-[rgba(34,197,94,0.15)] text-[var(--color-positive)]'
-                    }`}
-                  >
-                    {tx.type === 'transfer'
-                      ? tx.transferDirection === 'out' ? 'transfer-out' : 'transfer-in'
-                      : tx.type}
-                  </span>
                   <p
-                    className={`mt-3 text-[16px] font-semibold ${
+                    className={`text-[16px] font-semibold ${
                       tx.type === 'expense'
                         ? 'text-[var(--color-negative)]'
                         : tx.type === 'income'

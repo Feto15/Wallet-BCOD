@@ -43,10 +43,11 @@ Kode aplikasi (Next.js App Router):
 
 Route API (REST, server-side):
 - `APP/src/app/api/wallets/route.ts` — `GET /api/wallets`, `POST /api/wallets`.
+- `APP/src/app/api/wallets/[id]/route.ts` — `PATCH /api/wallets/:id` (update nama wallet).
 - `APP/src/app/api/wallets/[id]/summary/route.ts` — `GET /api/wallets/:id/summary` (income, expense, net, uncategorized; exclude transfer).
 - `APP/src/app/api/categories/route.ts` — `GET/POST /api/categories`.
 - `APP/src/app/api/transactions/route.ts` — `GET/POST /api/transactions` (expense/income/transfer). `GET` mendukung filter `type`, `wallet_id`, `category_id`, `date_from`, `date_to`, `search` (nama wallet/kategori/catatan), dan `sort` (`newest|oldest|highest|lowest`).
-- `APP/src/app/api/transactions/[id]/route.ts` — `DELETE /api/transactions/:id` (hapus 1 transaksi atau 1 grup transfer).
+- `APP/src/app/api/transactions/[id]/route.ts` — `PATCH /api/transactions/:id`, `DELETE /api/transactions/:id` (update atau hapus 1 transaksi; untuk transfer, update/hapus kedua baris dalam grup).
 - `APP/src/app/api/balances/route.ts` — `GET /api/balances` (saldo per wallet; opsional `wallet_id`).
 - `APP/src/app/api/reports/monthly-summary/route.ts` — `GET /api/reports/monthly-summary`.
 
@@ -56,10 +57,16 @@ Server Actions (hapus/hard delete):
 
 Komponen & hooks UI:
 - `APP/src/components/AddTransactionModal.tsx` — Modal tambah transaksi (Expense/Income/Transfer).
+- `APP/src/components/EditTransactionModal.tsx` — Modal edit transaksi (expense/income/transfer; transfer mengubah dua baris secara atomic via API).
+- `APP/src/components/TransactionOptionsModal.tsx` — Modal opsi transaksi (Edit / Hapus) yang dipicu dari tombol kebab `⋮` di daftar.
+- `APP/src/components/AddWalletModal.tsx` — Modal tambah wallet.
+- `APP/src/components/EditWalletModal.tsx` — Modal edit nama wallet.
+- `APP/src/components/DeleteWalletModal.tsx` — Modal konfirmasi hapus wallet.
+- `APP/src/components/WalletOptionsModal.tsx` — Modal opsi wallet (Edit / Hapus) yang dipicu dari tombol kebab `⋮` di daftar.
 - `APP/src/components/Toast.tsx` — Komponen toast notifikasi.
 - `APP/src/components/BottomNav.tsx` — Navigasi bawah (mobile-first).
 - `APP/src/hooks/useToast.ts` — Hook state & util untuk toast.
- - `APP/src/components/ui/*` — Primitif UI berbasis Radix/Shadcn (dialog, select, dll.).
+- `APP/src/components/ui/*` — Primitif UI berbasis Radix/Shadcn (dialog, select, dll.).
 
 Library utilitas & validasi:
 - `APP/src/lib/utils.ts` — Helper format IDR, parser input uang, helper umum.
@@ -109,3 +116,4 @@ Environment (tidak dikomit, contoh):
 - v1.2: Archive dihapus. Gunakan hard delete dengan foreign key: wallets → transactions ON DELETE CASCADE; categories → transactions ON DELETE SET NULL; transfer_groups → transactions ON DELETE CASCADE.
 - Pencarian cepat tersedia di `/transactions` via query `search` (mencari di nama wallet, kategori, dan catatan).
  - Perhitungan saldo transfer di `/api/balances` membedakan baris keluar/masuk dalam satu `transfer_group` secara deterministik (rekor dengan `id` terkecil diperlakukan sebagai baris keluar).
+ - Konsistensi tanggal: input API memakai string `YYYY-MM-DD HH:mm`, dan di server dikonversi ke `Date` (UTC) sebelum disimpan, baik untuk `POST` maupun `PATCH`.

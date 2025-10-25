@@ -48,6 +48,7 @@ Route API (REST, server-side):
 - `APP/src/app/api/categories/route.ts` — `GET/POST /api/categories`.
 - `APP/src/app/api/transactions/route.ts` — `GET/POST /api/transactions` (expense/income/transfer). `GET` mendukung filter `type`, `wallet_id`, `category_id`, `date_from`, `date_to`, `search` (nama wallet/kategori/catatan), dan `sort` (`newest|oldest|highest|lowest`).
 - `APP/src/app/api/transactions/[id]/route.ts` — `PATCH /api/transactions/:id`, `DELETE /api/transactions/:id` (update atau hapus 1 transaksi; untuk transfer, update/hapus kedua baris dalam grup).
+- `APP/src/app/api/transfer-groups/[id]/route.ts` — `GET /api/transfer-groups/:id` (ambil 2 baris transfer/"legs" untuk satu grup, urut MIN(id) sebagai keluar).
 - `APP/src/app/api/balances/route.ts` — `GET /api/balances` (saldo per wallet; opsional `wallet_id`).
 - `APP/src/app/api/reports/monthly-summary/route.ts` — `GET /api/reports/monthly-summary`.
 

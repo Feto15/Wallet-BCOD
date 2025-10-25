@@ -45,9 +45,13 @@ export default function WalletsPage() {
       const data = await res.json();
       setWallets(data);
       
-      // Fetch balances for all wallets (includes transfer effects)
+      // Batch fetch balances and summaries in parallel (only 2 requests total)
       try {
-        const balancesRes = await fetch('/api/balances');
+        const [balancesRes, summariesRes] = await Promise.all([
+          fetch('/api/balances'),
+          fetch('/api/wallets/summaries'),
+        ]);
+
         if (balancesRes.ok) {
           const balancesData: WalletBalance[] = await balancesRes.json();
           const balanceMap: Record<number, number> = {};
@@ -56,25 +60,23 @@ export default function WalletsPage() {
           }
           setWalletBalances(balanceMap);
         }
-      } catch (err) {
-        console.error('Failed to fetch balances:', err);
-      }
-      
-      // Fetch summary for each wallet
-      const summaries: Record<number, WalletSummary> = {};
-      await Promise.all(
-        data.map(async (wallet: Wallet) => {
-          try {
-            const summaryRes = await fetch(`/api/wallets/${wallet.id}/summary`);
-            if (summaryRes.ok) {
-              summaries[wallet.id] = await summaryRes.json();
-            }
-          } catch (err) {
-            console.error(`Failed to fetch summary for wallet ${wallet.id}:`, err);
+
+        if (summariesRes.ok) {
+          const summariesData: Array<WalletSummary & { walletId: number }> = await summariesRes.json();
+          const summaryMap: Record<number, WalletSummary> = {};
+          for (const s of summariesData) {
+            summaryMap[s.walletId] = {
+              income: s.income,
+              expense: s.expense,
+              net: s.net,
+              uncategorized: s.uncategorized,
+            };
           }
-        })
-      );
-      setWalletSummaries(summaries);
+          setWalletSummaries(summaryMap);
+        }
+      } catch (err) {
+        console.error('Failed to fetch balances or summaries:', err);
+      }
     } catch (error) {
       console.error('Failed to fetch wallets:', error);
     } finally {

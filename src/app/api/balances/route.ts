@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { db } from '@/db/client';
 import { transactions, wallets } from '@/db/schema';
 import { balanceQuerySchema } from '@/lib/validation';
-import { eq, sql, and } from 'drizzle-orm';
+import { eq, sql, and, isNotNull } from 'drizzle-orm';
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,69 +11,66 @@ export async function GET(request: NextRequest) {
       wallet_id: searchParams.get('wallet_id') || undefined,
     });
 
-    // v1.2: Get all wallets (no archive filtering)
-    const conditions = [];
-    
+    // Single-query aggregation to avoid N+1
+    // Step 1: Create subquery for min ID per transfer group
+    const minIdPerGroup = db
+      .select({
+        transferGroupId: transactions.transferGroupId,
+        minId: sql<number>`MIN(${transactions.id})`.as('minId'),
+      })
+      .from(transactions)
+      .where(isNotNull(transactions.transferGroupId))
+      .groupBy(transactions.transferGroupId)
+      .as('g');
+
+    // Step 2: Join wallets with transactions and transfer group info
+    const t = transactions;
+    const g = minIdPerGroup;
+
+    // Build wallet filter condition
+    const walletConditions = [];
     if (query.wallet_id) {
-      conditions.push(eq(wallets.id, query.wallet_id));
+      walletConditions.push(eq(wallets.id, query.wallet_id));
     }
 
-    const walletsList = await db
-      .select()
-      .from(wallets)
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
-
-    // Calculate balance for each wallet
-    const balances = await Promise.all(
-      walletsList.map(async (wallet) => {
-        // Calculate balance:
-        // - Income: +amount
-        // - Expense: -amount
-        // - Transfer: For the "from" wallet it's the first record (negative), 
-        //             for the "to" wallet it's the second record (positive)
-        // We determine this by checking if there's an earlier transaction ID 
-        // in the same transfer_group
-
-        const result = await db
-          .select({
-            balance: sql<number>`
-              COALESCE(
-                SUM(
-                  CASE
-                    WHEN ${transactions.type} = 'income' THEN ${transactions.amount}
-                    WHEN ${transactions.type} = 'expense' THEN -${transactions.amount}
-                    WHEN ${transactions.type} = 'transfer' THEN
-                      CASE
-                        WHEN (
-                          SELECT MIN(t2.id)
-                          FROM transactions t2
-                          WHERE t2.transfer_group_id = ${transactions.transferGroupId}
-                        ) = ${transactions.id} 
-                        THEN -${transactions.amount}
-                        ELSE ${transactions.amount}
-                      END
-                  END
-                ),
-                0
-              )
-            `.as('balance'),
-          })
-          .from(transactions)
-          .where(eq(transactions.walletId, wallet.id));
-
-        const rawBalance = result[0]?.balance ?? 0;
-        const balanceValue = Number(rawBalance);
-
-        return {
-          walletId: wallet.id,
-          walletName: wallet.name,
-          currency: wallet.currency,
-          balance: Number.isNaN(balanceValue) ? 0 : balanceValue,
-        };
+    // Step 3: Single aggregation query
+    const balances = await db
+      .select({
+        walletId: wallets.id,
+        walletName: wallets.name,
+        currency: wallets.currency,
+        balance: sql<number>`
+          COALESCE(
+            SUM(
+              CASE
+                WHEN ${t.type} = 'income' THEN ${t.amount}
+                WHEN ${t.type} = 'expense' THEN -${t.amount}
+                WHEN ${t.type} = 'transfer' AND ${t.id} = COALESCE(${g.minId}, (
+                  SELECT MIN(t2.id)
+                  FROM ${transactions} t2
+                  WHERE t2.transfer_group_id = ${t.transferGroupId}
+                )) THEN -${t.amount}
+                WHEN ${t.type} = 'transfer' THEN ${t.amount}
+                ELSE 0
+              END
+            ),
+            0
+          )
+        `.as('balance'),
       })
-    );
+      .from(wallets)
+      .leftJoin(t, eq(t.walletId, wallets.id))
+      .leftJoin(g, eq(g.transferGroupId, t.transferGroupId))
+      .where(walletConditions.length > 0 ? and(...walletConditions) : undefined)
+      .groupBy(wallets.id, wallets.name, wallets.currency);
 
-    return NextResponse.json(balances);
+    // Normalize balance to number (Postgres/Drizzle may return bigint as string)
+    const normalized = balances.map((b) => ({
+      ...b,
+      balance: Number(b.balance ?? 0),
+    }));
+
+    return NextResponse.json(normalized);
   } catch (error) {
     if (error instanceof Error) {
       return NextResponse.json(

@@ -51,19 +51,28 @@ export default function Dashboard() {
     try {
       setLoading(true);
 
-      const balancesRes = await fetch('/api/balances');
+      // Parallel fetch for better performance
+      const currentMonth = getCurrentMonth();
+      const [balancesRes, summaryRes] = await Promise.all([
+        fetch('/api/balances'),
+        fetch(`/api/reports/monthly-summary?month=${currentMonth}`),
+      ]);
+
       if (!balancesRes.ok) {
         throw new Error('Failed to fetch balances');
       }
-      const balancesData = await balancesRes.json();
-      setBalances(balancesData);
-
-      const currentMonth = getCurrentMonth();
-      const summaryRes = await fetch(`/api/reports/monthly-summary?month=${currentMonth}`);
       if (!summaryRes.ok) {
         throw new Error('Failed to fetch monthly summary');
       }
-      const summaryData = await summaryRes.json();
+
+      // Parse responses in parallel
+      const [balancesData, summaryData] = await Promise.all([
+        balancesRes.json(),
+        summaryRes.json(),
+      ]);
+
+      // Ensure balance is number (guard against string concatenation)
+      setBalances(balancesData.map((b: Balance) => ({ ...b, balance: Number(b.balance) })));
       setMonthlySummary(summaryData);
     } catch (error) {
       console.error('Failed to fetch dashboard data:', error);

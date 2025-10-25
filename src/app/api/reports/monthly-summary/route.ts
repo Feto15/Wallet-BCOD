@@ -18,12 +18,14 @@ export async function GET(request: NextRequest) {
 
     const query = monthlySummaryQuerySchema.parse({ month });
 
-    // Parse month to get start and end dates
-    const [year, monthNum] = query.month.split('-');
-    const startDate = new Date(`${year}-${monthNum}-01 00:00:00`);
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 1);
-    endDate.setSeconds(endDate.getSeconds() - 1); // Last second of the month
+    // Parse month to get start and end dates (use UTC for consistency)
+    const [yearStr, monthStr] = query.month.split('-');
+    const year = Number(yearStr);
+    const monthNum = Number(monthStr);
+    
+    // Create UTC date range: first day 00:00:00 to last day 23:59:59.999
+    const startDate = new Date(Date.UTC(year, monthNum - 1, 1, 0, 0, 0, 0));
+    const endDate = new Date(Date.UTC(year, monthNum, 0, 23, 59, 59, 999));
 
     // Get summary grouped by category
     const results = await db

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import dayjs from 'dayjs';
 import { formatIDR } from '@/lib/utils';
 import { ToastContainer } from '@/components/Toast';
@@ -54,10 +54,14 @@ export default function TransactionsPage() {
 
   // Filter states
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'expense' | 'income'>('all');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [selectedWallet, setSelectedWallet] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'highest' | 'lowest'>('newest');
+
+  // AbortController ref for cancelling ongoing requests
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchWallets = async () => {
     try {
@@ -83,21 +87,33 @@ export default function TransactionsPage() {
 
   const fetchTransactions = async (options: { silent?: boolean } = {}) => {
     const { silent = false } = options;
+    
+    // Abort previous request if exists
+    if (abortRef.current) {
+      abortRef.current.abort();
+    }
+
+    // Create new AbortController for this request
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
       console.log('Fetching transactions...');
       if (!silent) {
         setLoading(true);
       }
 
-      // Build query params
+      // Build query params (use debouncedSearch instead of searchQuery)
       const params = new URLSearchParams();
-      if (searchQuery) params.append('search', searchQuery);
+      if (debouncedSearch) params.append('search', debouncedSearch);
       if (activeTab !== 'all') params.append('type', activeTab);
       if (selectedCategory !== 'all') params.append('category_id', selectedCategory);
       if (selectedWallet !== 'all') params.append('wallet_id', selectedWallet);
       params.append('sort', sortBy);
 
-      const res = await fetch(`/api/transactions?${params.toString()}`);
+      const res = await fetch(`/api/transactions?${params.toString()}`, {
+        signal: controller.signal,
+      });
       console.log('Response status:', res.status);
       if (!res.ok) {
         throw new Error(`Failed to fetch transactions (${res.status})`);
@@ -106,6 +122,11 @@ export default function TransactionsPage() {
       console.log('Transactions data:', data);
       setTransactions(data);
     } catch (error) {
+      // Ignore abort errors
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request aborted');
+        return;
+      }
       console.error('Failed to fetch transactions:', error);
       toast.error('Failed to load transactions');
     } finally {
@@ -123,10 +144,19 @@ export default function TransactionsPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Debounce search query
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
+
   useEffect(() => {
     fetchTransactions();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery, activeTab, selectedCategory, selectedWallet, sortBy]);
+  }, [debouncedSearch, activeTab, selectedCategory, selectedWallet, sortBy]);
 
   console.log('Render - loading:', loading, 'transactions:', transactions.length);
 
